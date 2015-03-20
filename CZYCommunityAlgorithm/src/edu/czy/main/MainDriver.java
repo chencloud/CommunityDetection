@@ -10,7 +10,7 @@ import edu.czy.load.LoadGML;
 import edu.czy.load.LoadGroundTruthFile;
 import edu.czy.lpa.NMFWLPA;
 import edu.czy.lpa.StandardLPA;
-import edu.czy.measure.MeasuerCollections;
+import edu.czy.measure.MeasureCollections;
 import edu.czy.measure.Measure;
 import edu.czy.utils.GraphUtils;
 import edu.uci.ics.jung.graph.SparseGraph;
@@ -74,9 +74,9 @@ public class MainDriver {
 		 * Measure the Result
 		 */
 		
-		System.out.println("Modularity Q="+MeasuerCollections.calculateQ(sparse_graph));
-		System.out.println("Truth Modularity Q="+MeasuerCollections.calculateQForTruth(sparse_graph));
-		System.out.println("NMI="+MeasuerCollections.calculateNMI(GraphUtils.exportCommunityCollection(sparse_graph),
+		System.out.println("Modularity Q="+MeasureCollections.calculateQ(sparse_graph));
+		System.out.println("Truth Modularity Q="+MeasureCollections.calculateQForTruth(sparse_graph));
+		System.out.println("NMI="+MeasureCollections.calculateNMI(GraphUtils.exportCommunityCollection(sparse_graph),
 								GraphUtils.exportCommunityGroundTruthCollection(sparse_graph),sparse_graph.getVertexCount()));
 		/*
 		 * Export to gml File

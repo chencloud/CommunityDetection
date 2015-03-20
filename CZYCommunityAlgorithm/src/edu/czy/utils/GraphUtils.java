@@ -12,6 +12,7 @@ import edu.uci.ics.jung.graph.SparseGraph;
 
 public class GraphUtils {
 	public final static String  OverlapNode_Split = ",";
+	public static final double eps=2.2204e-16;
 	public static Double calcalueEducianSimilarity(Vertex curV, Vertex v) {
 		// TODO Auto-generated method stub
 		

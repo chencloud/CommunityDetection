@@ -6,7 +6,7 @@ import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
 import edu.uci.ics.jung.graph.SparseGraph;
 
-public class MeasuerCollections {
+public class MeasureCollections {
 	public static double calculateNMI(Collection<Collection<Integer>> partition,
 			Collection<Collection<Integer>> partitionTrue,int nodeCount){
 		return NMIMeasure.NMIPartition1(partition, partitionTrue, nodeCount);
