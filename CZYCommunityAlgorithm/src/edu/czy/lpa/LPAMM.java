@@ -49,7 +49,7 @@ public class LPAMM extends LPA{
 			String max_coms_id = "";//com1id+com2id
 			//calculate all community pairs
 			double current_Q = 
-						MeasureCollections.calculateQFromCollections(graph, lpam.getCommunitysByInteger());
+						MeasureCollections.calculateQFromCollectionsWithInteger(graph, comMap.values(),this.nodeMap);
 			for(Entry<String,Collection<Integer>> com1:comMap.entrySet()) {
 				for(Entry<String,Collection<Integer>> com2:comMap.entrySet()) {
 					if(!com1.getKey().trim().equals(com2.getKey().trim())){
@@ -60,7 +60,7 @@ public class LPAMM extends LPA{
 						comComparedMap.remove(com1.getKey());
 						comComparedMap.remove(com2.getKey());
 						comComparedMap.put(newComId, newCom);
-						double newQ = MeasureCollections.calculateQFromCollections(graph, comComparedMap.values());
+						double newQ = MeasureCollections.calculateQFromCollectionsWithInteger(graph, comComparedMap.values(),this.nodeMap);
 						if(newQ-current_Q > 0){
 							if(max_deltaQ < (newQ-current_Q)){
 								max_deltaQ = newQ-current_Q;
