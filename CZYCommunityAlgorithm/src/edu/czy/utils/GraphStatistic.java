@@ -2,6 +2,7 @@ package edu.czy.utils;
 
 import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
+import edu.czy.load.LoadEdgeFile;
 import edu.czy.load.LoadGML;
 import edu.uci.ics.jung.graph.SparseGraph;
 import edu.uci.ics.jung.algorithms.shortestpath.DijkstraDistance;
@@ -17,8 +18,11 @@ public class GraphStatistic {
 		for(Vertex v1:graph.getVertices()) {
 			for(Vertex v2:graph.getVertices()) {
 				if(v1.getId()<v2.getId()){
-					totalPathLength += dist.getDistance(v1, v2).intValue();
-					totalPathNum += 1;
+					Number d = dist.getDistance(v1, v2);
+					if(d!=null){
+						totalPathLength += d.intValue();
+						totalPathNum += 1;
+					}
 				}
 			}
 		}
@@ -44,22 +48,40 @@ public class GraphStatistic {
 		for(Vertex v1:graph.getVertices()) {
 			for(Vertex v2:graph.getVertices()) {
 				if(v1.getId()<v2.getId()){
-					int len = dist.getDistance(v1, v2).intValue();
-					maxLen = len>maxLen?len:maxLen;
+					Number d = dist.getDistance(v1, v2);
+					if(d!=null){
+						int len = dist.getDistance(v1, v2).intValue();
+						maxLen = len>maxLen?len:maxLen;
+					}
+
 				}
 			}
 		}
 		return maxLen;
 	}
 	public static void main(String[] args){
-//		String gmlfilename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";
-//		String gmlfilename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
-		String gmlfilename="E:\\dataset\\unweight_dataset\\Internet\\Internet.gml";
-		String edgefilename="";
-		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
-		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
-//		LoadEdgeFile<Vertex,Edge> loadEdge = new LoadEdgeFile<Vertex,Edge>(Vertex.class,Edge.class);
-//		SparseGraph<Vertex,Edge> sparse_graph = loadEdge.loadGraph(edgefilenam);
+//		String filename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\Internet\\Internet.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\polbooks\\polbooks.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\jazz\\jazz.net";
+//		String filename="E:\\dataset\\unweight_dataset\\email\\email.net";
+//		String filename="E:\\dataset\\unweight_dataset\\mexican\\mexican.net";
+//		String filename="E:\\dataset\\unweight_dataset\\pro-pro\\pro-pro.net";
+//		String filename="E:\\dataset\\unweight_dataset\\celegans_metabolic\\celegans_metabolic.net";
+//		String filename="E:\\dataset\\unweight_dataset\\pgp\\pgp.net";
+//		String filename="E:\\dataset\\unweight_dataset\\power_grid\\power_grid.gml";
+		
+		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+
+		SparseGraph<Vertex,Edge> graph = null;
+		if(filename.endsWith(".gml")){
+			LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
+			graph=loadGML.loadGraph(filename);
+		} else if(filename.endsWith(".net")) {
+			LoadEdgeFile<Vertex,Edge> loadEdge = new LoadEdgeFile<Vertex,Edge>(Vertex.class,Edge.class);
+			graph = loadEdge.loadGraph(filename);
+		}
 		GraphStatistic.printGraphStatistic(graph);
 	}
 }

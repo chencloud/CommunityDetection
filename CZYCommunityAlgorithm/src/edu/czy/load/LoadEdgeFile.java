@@ -33,7 +33,26 @@ public class LoadEdgeFile<V extends Vertex,E extends Edge> {
 		try{
 			loader = new BufferedReader(new FileReader(filePath));
 			while((line = loader.readLine()) != null){
+				
+				line = line.trim();
+				if(line.startsWith("*")||line.startsWith("#")){
+					continue;
+				}
+				StringBuilder sb = new StringBuilder();
+				sb.append(line.charAt(0));
+				for(int i=1;i<line.length();i++) {
+					if(line.charAt(i)!=' ' && line.charAt(i)!='\t'){
+						sb.append(line.charAt(i));
+					} else if (line.charAt(i-1)!=' ' && line.charAt(i-1)!='\t'){
+						sb.append(line.charAt(i));
+					}
+				}
+				line = sb.toString();
+//				System.out.println(line);
 				item = line.trim().split("\\s");
+				if(item.length !=2 && item.length != 3){
+					continue;
+				}
 				long source = Long.parseLong(item[0].trim());
 				long target = Long.parseLong(item[1].trim());
 				if(source == target)
