@@ -29,14 +29,59 @@ public class GraphNMF {
 	private Matrix adj_matrix;
 	private Matrix U;
 	private Matrix V;
+	public Matrix getAdj_matrix() {
+		return adj_matrix;
+	}
+	public void setAdj_matrix(Matrix adj_matrix) {
+		this.adj_matrix = adj_matrix;
+	}
+	public Matrix getU() {
+		return U;
+	}
+	public void setU(Matrix u) {
+		U = u;
+	}
+	public Matrix getV() {
+		return V;
+	}
+	public void setV(Matrix v) {
+		V = v;
+	}
+	public int getK() {
+		return k;
+	}
+	public void setK(int k) {
+		this.k = k;
+	}
+	public int getItera() {
+		return itera;
+	}
+	public void setItera(int itera) {
+		this.itera = itera;
+	}
+	public int getItera_error() {
+		return itera_error;
+	}
+	public void setItera_error(int itera_error) {
+		this.itera_error = itera_error;
+	}
+	public double getEps() {
+		return eps;
+	}
 	private int k;//the hidden feature factor
 	private int itera;
 	private int itera_error;
 	private Map<Vertex,Integer> NodeIdMap;
-	private final double eps=2.2204e-16;
+	private final double eps=Math.sqrt(2.2204e-16);
 	
 	public GraphNMF(SparseGraph<Vertex,Edge> g){
 		this(g,10,100,5);
+	}
+	public GraphNMF(double[][] adjM,int k,int iteration,int iterationError) {
+		this.adj_matrix = new Matrix(adjM);
+		this.k = k;
+		this.itera = iteration;
+		this.itera_error = iterationError;
 	}
 	/**
 	 * @param g sparsegraph
@@ -86,18 +131,6 @@ public class GraphNMF {
 		}
 		System.out.println("the initcount:"+initcount);
 		
-	}
-	
-	/**
-	 * Init UV random number between 0.0 and 1.0
-	 */
-	private void InitUV(){
-		/*
-		 * init the U、V matrix
-		 */
-		int nodecount=this.sparse_graph.getVertexCount();
-		this.U=Matrix.random(nodecount, k);
-		this.V=Matrix.random(k, nodecount);
 	}
 	/**
 	 * train the NMF MODEL by multi variable method
@@ -194,9 +227,26 @@ public class GraphNMF {
 			/*
 			 * init the U、V matrix
 			 */
-			int nodecount=this.sparse_graph.getVertexCount();
+			int nodecount= this.adj_matrix.getRowDimension();
 			tempU=Matrix.random(nodecount, k);
-			//this.PrintMatrix(tempU);
+			/*
+			 * Normalize
+			 */
+			if(isnormal)
+			{
+				for(int irow=0;irow<tempU.getRowDimension();irow++)
+				{
+					double irowsum=0.0;
+					for(int jcol=0;jcol<tempU.getColumnDimension();jcol++)
+					{
+						irowsum+=tempU.get(irow, jcol);
+					}
+					for(int jcol=0;jcol<tempU.getColumnDimension();jcol++)
+					{
+						tempU.set(irow, jcol, tempU.get(irow, jcol)/(irowsum+0.00001));
+					}
+				}
+			}
 			tempV=tempU.transpose();
 			double error = Double.MAX_VALUE;
 			for(int i=0;i<this.itera;i++)//iteration number
@@ -238,16 +288,10 @@ public class GraphNMF {
 				for(int row=0;row<errorMatrix.getRowDimension();row++)
 					for(int col=0;col<errorMatrix.getColumnDimension();col++)
 						curError+=errorMatrix.get(row, col);
-//				System.out.println(curError);
-//				if(error > curError) {
-//					error = curError;
-					tempU = ttempU;
-					tempV = tempU.transpose();
-//				} else {
-//					break;
-//				}
+				tempU = ttempU;
+				tempV = tempU.transpose();
+
 			}
-//			this.PrintMatrix(tempU);
 			
 			/*
 			 * estimate the error
@@ -280,11 +324,6 @@ public class GraphNMF {
 				vWeights.add(this.U.get(vid, i));
 				//System.out.print(this.U.get(vid, i)+";");
 			}
-////			System.out.println();
-//			for(int i=0;i<k;i++){
-//				vWeights.add(this.V.get(i, vid));
-//				//System.out.print(this.V.get(i, vid)+";");
-//			}
 			v.setWeight(vWeights);
 		}
 		return this.sparse_graph;

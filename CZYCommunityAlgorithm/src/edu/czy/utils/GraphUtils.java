@@ -11,8 +11,11 @@ import edu.czy.datastructure.Vertex;
 import edu.uci.ics.jung.graph.SparseGraph;
 
 public class GraphUtils {
+	public final static double minIntersectionRatio = 0.5;
 	public final static String  OverlapNode_Split = ",";
-	public static final double eps=2.2204e-16;
+	public final static double eps = 2.2204e-16;
+	public final static double coefficient = 0.8;
+	public final static double minCommunity = 3;
 	public static Double calcalueEducianSimilarity(Vertex curV, Vertex v) {
 		// TODO Auto-generated method stub
 		
@@ -239,6 +242,17 @@ public class GraphUtils {
 		for(Collection<Integer> com :coms) {
 			for(Integer id:com){
 				System.out.print(id);
+				System.out.print(delim);
+			}
+			System.out.println();
+		}
+	}
+	public static void PrintCommunityCollectionsWithVertex(
+			Collection<Collection<Vertex>> coms, String delim) {
+		// TODO Auto-generated method stub
+		for(Collection<Vertex> com :coms) {
+			for(Vertex id:com){
+				System.out.print(id.getId());
 				System.out.print(delim);
 			}
 			System.out.println();

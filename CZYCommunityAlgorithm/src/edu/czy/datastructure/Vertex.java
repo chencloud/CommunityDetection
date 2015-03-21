@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.czy.utils.GraphUtils;
+
 
 /**
  * @author CHENZHIYUN
@@ -18,7 +20,7 @@ public class Vertex {
 	//groundTruth means ground truth
 	private String groundTruth;
 	private List<Double> weight;
-	private Map<Integer,Double> communityDistribution;
+	private Map<Long,Double> communityDistribution;
 	/**
 	 * @return the groundTruth
 	 */
@@ -52,7 +54,35 @@ public class Vertex {
 		this.value = null;
 		this.groundTruth = null;
 		this.weight=null;
-		this.communityDistribution = new HashMap<Integer,Double>();
+		this.communityDistribution = new HashMap<Long,Double>();
+	}
+	public Vertex(Long id,String label,String value,String groundTruth) {
+		this.id = id;
+		this.label = label;
+		this.value = value!=null && !"".equals(value)?value:null;
+		this.groundTruth = groundTruth!=null && !"".equals(groundTruth)?groundTruth:null;;
+		this.weight=null;
+		this.communityDistribution = new HashMap<Long,Double>();
+	}
+	public Vertex(Long id,String label,String[] value,String[] groundTruth) {
+		this.id = id;
+		this.label = label;
+		if(value != null && value.length > 0) {
+			this.value = value[0];
+			for(int i = 1; i < value.length; i++) {
+				this.value = this.value+GraphUtils.OverlapNode_Split+value[i];
+			}
+		} else
+			this.value = null;
+		if(groundTruth != null && groundTruth.length > 0) {
+			this.groundTruth = groundTruth[0];
+			for(int i = 1; i < groundTruth.length; i++) {
+				this.groundTruth = this.groundTruth+GraphUtils.OverlapNode_Split+groundTruth[i];
+			}
+		} else
+			this.groundTruth = null;
+		this.weight=null;
+		this.communityDistribution = new HashMap<Long,Double>();
 	}
 	/**
 	 * @return the id
@@ -90,6 +120,17 @@ public class Vertex {
 	public String getValue() {
 		if(value != null)
 			return value;
+		else
+			return null;
+	}
+	/**
+	 * @return the fake
+	 */
+	public String[] getArrayValue() {
+		if(value != null && !"".equals(value)) {
+			String[] result = value.split(GraphUtils.OverlapNode_Split);
+			return result;
+		}
 		else
 			return null;
 	}
@@ -139,10 +180,19 @@ public class Vertex {
 			return false;
 		return true;
 	}
-	public Map<Integer, Double> getCommunityDistribution() {
+	public Map<Long, Double> getCommunityDistribution() {
 		return communityDistribution;
 	}
-	public void setCommunityDistribution(Map<Integer, Double> communityDistribution) {
+	public void setCommunityDistribution(Map<Long, Double> communityDistribution) {
 		this.communityDistribution = communityDistribution;
+	}
+	
+	public void updateCommunityDistribution(Long votedCommunity, double voteIncrement) {
+		
+		if ( communityDistribution.containsKey(votedCommunity) ) 
+			voteIncrement += communityDistribution.get(votedCommunity);
+		
+		communityDistribution.put(votedCommunity, voteIncrement);
+		
 	}
 }
