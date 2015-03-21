@@ -135,10 +135,10 @@ public class GraphUtils {
 			String values = v.getValue();
 			if(values.split(GraphUtils.OverlapNode_Split).length>1) {
 				for(String value:values.split(GraphUtils.OverlapNode_Split)) {
-					if(!results.containsKey(values)) {
-						results.put(values, new ArrayList<Integer>());
+					if(!results.containsKey(value)) {
+						results.put(value, new ArrayList<Integer>());
 					}
-					results.get(values).add((int)v.getId());
+					results.get(value).add((int)v.getId());
 				}
 			} else {
 				if(!results.containsKey(values)) {
@@ -157,10 +157,10 @@ public class GraphUtils {
 			String values = v.getValue();
 			if(values.split(GraphUtils.OverlapNode_Split).length>1) {
 				for(String value:values.split(GraphUtils.OverlapNode_Split)) {
-					if(!results.containsKey(values)) {
-						results.put(values, new ArrayList<Vertex>());
+					if(!results.containsKey(value)) {
+						results.put(value, new ArrayList<Vertex>());
 					}
-					results.get(values).add(v);
+					results.get(value).add(v);
 				}
 			} else {
 				if(!results.containsKey(values)) {
@@ -179,10 +179,10 @@ public class GraphUtils {
 			String values = v.getGroundTruth();
 			if(values.split(GraphUtils.OverlapNode_Split).length>1) {
 				for(String value:values.split(GraphUtils.OverlapNode_Split)) {
-					if(!results.containsKey(values)) {
-						results.put(values, new ArrayList<Integer>());
+					if(!results.containsKey(value)) {
+						results.put(value, new ArrayList<Integer>());
 					}
-					results.get(values).add((int)v.getId());
+					results.get(value).add((int)v.getId());
 				}
 			} else {
 				if(!results.containsKey(values)) {
@@ -201,10 +201,10 @@ public class GraphUtils {
 			String values = v.getGroundTruth();
 			if(values.split(GraphUtils.OverlapNode_Split).length>1) {
 				for(String value:values.split(GraphUtils.OverlapNode_Split)) {
-					if(!results.containsKey(values)) {
-						results.put(values, new ArrayList<Vertex>());
+					if(!results.containsKey(value)) {
+						results.put(value, new ArrayList<Vertex>());
 					}
-					results.get(values).add(v);
+					results.get(value).add(v);
 				}
 			} else {
 				if(!results.containsKey(values)) {
