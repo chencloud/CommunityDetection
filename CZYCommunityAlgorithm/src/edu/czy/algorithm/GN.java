@@ -8,7 +8,11 @@ import java.util.Set;
 
 import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
+import edu.czy.load.LoadGML;
+import edu.czy.lpa.LPA;
+import edu.czy.lpa.LPAM;
 import edu.czy.measure.MeasureCollections;
+import edu.czy.utils.GraphUtils;
 import edu.uci.ics.jung.algorithms.cluster.EdgeBetweennessClusterer;
 import edu.uci.ics.jung.graph.SparseGraph;
 
@@ -32,5 +36,15 @@ public class GN {
 			}
 		}
 		return results;
+	}
+	public static void  main(String[] args) {
+		String gmlfilename="J:\\paperproject\\DataSet\\karate\\karate.gml";
+		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
+		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
+		GN gn = new GN();
+		Collection<Collection<Vertex>> coms = gn.GNMaxQ(graph);
+		GraphUtils.PrintCommunityCollectionsWithVertex(coms, ";");
+		double Q=MeasureCollections.calculateQFromCollectionsWithVertex(graph, coms);
+		System.out.println("Modularrity Q="+Q);
 	}
 }

@@ -113,11 +113,11 @@ public class MeasureCollections {
 		int ki, kj;
 		List<Vertex> vertices = new ArrayList<Vertex>();
 		for(Integer id:com) {
-			vertices.add(nodeMap.get(id));
+			vertices.add(nodeMap.get((long)id));
 		}
 		Collection<Vertex> neighborVertices;
 		Vertex vi, vj;
-		for (int i = 0; i < vertices.size() - 1; i++) {
+		for (int i = 0; i < vertices.size(); i++) {
 			vi = vertices.get(i);
 			neighborVertices = graph.getNeighbors(vi);
 			ki = graph.degree(vi);

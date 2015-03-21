@@ -9,7 +9,9 @@ import java.util.Set;
 
 import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
+import edu.czy.load.LoadGML;
 import edu.czy.measure.MeasureCollections;
+import edu.czy.utils.GraphUtils;
 import edu.uci.ics.jung.graph.SparseGraph;
 
 public class LPAMM extends LPA{
@@ -90,7 +92,7 @@ public class LPAMM extends LPA{
 		//update nodes final label
 		for(Entry<String,Collection<Integer>> com:comMap.entrySet()){
 			for(Integer id:com.getValue()){
-				this.nodeMap.get(id).setValue(com.getKey());
+				this.nodeMap.get((long)id).setValue(com.getKey());
 			}
 		}
 	}
@@ -98,6 +100,18 @@ public class LPAMM extends LPA{
 	public boolean updatelabel(Vertex[] v) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	public static void  main(String[] args) {
+		String gmlfilename="J:\\paperproject\\DataSet\\karate\\karate.gml";
+		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
+		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
+		LPA lpamm = new LPAMM(graph,10000);
+		lpamm.run();
+		Collection<Collection<Vertex>> coms = lpamm.getCommunitysByVertex();
+		GraphUtils.PrintCommunityCollectionsWithVertex(coms, ";");
+		double Q=MeasureCollections.calculateQFromCollectionsWithVertex(graph, coms);
+		System.out.println("Modularrity Q="+Q);
 	}
 
 }

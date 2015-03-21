@@ -26,7 +26,6 @@ public class SLPA extends LPA{
 	public SLPA(SparseGraph<Vertex, Edge> g, int itera,double r) {
 		super(g, itera);
 		this.r = r;
-		
 		// TODO Auto-generated constructor stub
 	}
 	@Override
@@ -131,6 +130,10 @@ public class SLPA extends LPA{
 		
 		//Return the corresponding community
 		return communities.get(i);
+	}
+	
+	public static void main(String args[]) {
+		
 	}
 
 }

@@ -3,7 +3,14 @@ package monc;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
+
+import edu.czy.datastructure.Edge;
+import edu.czy.datastructure.Vertex;
+import edu.czy.load.LoadGML;
+import edu.uci.ics.jung.graph.SparseGraph;
 
 public class MONC {
 	class Neighbour {
@@ -70,7 +77,7 @@ public class MONC {
 			System.out.println((end - start) / 1000f + " seconds");
 		}
 		PrintWriter pw = new PrintWriter(
-				"C:\\Users\\Famiking\\Desktop\\Monc\\result.txt");
+				"Monc_result.txt");
 		pw.println("cMatrix");
 		for (int i = 1; i < this.cMatrix.length; i++) {
 			for (int j = 1; j < this.cMatrix.length; j++) {
@@ -305,13 +312,21 @@ public class MONC {
 	}
 
 	public static void main(String[] args) throws FileNotFoundException {
-//		long start = System.currentTimeMillis();
-//		MONC m = new MONC(35, new TransformIntoMatrix().getAdjacentMatrix());
-//		m.AlogorithmProcedure();
-//		m.printMatrix(m.cMatrix);
-//		m.printMatrix(m.alphaMatrix);
-//		long end = System.currentTimeMillis();
-//		System.out.println((end - start) / 1000f + " seconds");
-//		System.out.println("it's done");
+		long start = System.currentTimeMillis();
+		String gmlfilename="J:\\paperproject\\DataSet\\karate\\karate.gml";
+		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
+		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
+		Map<Integer,Vertex> nodeMap = new HashMap<Integer,Vertex>();
+		int nodeCount = graph.getVertexCount();
+		for(Vertex v:graph.getVertices()) {
+			nodeMap.put(--nodeCount, v);
+		}
+		MONC m = new MONC(nodeCount, new TransformIntoMatrix(graph,nodeMap).getAdjacentMatrix());
+		m.AlogorithmProcedure();
+		m.printMatrix(m.cMatrix);
+		m.printMatrix(m.alphaMatrix);
+		long end = System.currentTimeMillis();
+		System.out.println((end - start) / 1000f + " seconds");
+		System.out.println("it's done");
 	}
 }
