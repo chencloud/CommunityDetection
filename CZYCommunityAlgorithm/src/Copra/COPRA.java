@@ -12,6 +12,7 @@ import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
 import edu.czy.export.ExportFile;
 import edu.czy.load.LoadGML;
+import edu.czy.utils.GraphUtils;
 import edu.uci.ics.jung.graph.SparseGraph;
 
 public class COPRA
@@ -1277,15 +1278,19 @@ label0:
     	for(int i=0;i<args.length;i++){
     		argsList.add(args[i]);
     	}
-		String gmlfilename = "J:\\paperproject\\DataSet\\karate\\karate.gml";
-		LoadGML<Vertex, Edge> loadGML = new LoadGML<Vertex, Edge>(Vertex.class,Edge.class);
-		SparseGraph<Vertex, Edge> graph = loadGML.loadGraph(gmlfilename);
+		String filename="E:\\dataset\\unweight_dataset\\email\\email.net";
+		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		ExportFile.exportAsEdgeFile(graph, "copra_temp.edge");
 		argsList.add("copra_temp.edge");
-		argsList.add("-v");
+		argsList.add("-vs");
+		argsList.add("1");
 		argsList.add("10");
 		argsList.add("-mo");
-//		argsList.add("-extrasimlify");
+//		argsList.add("-extrasimplify");
+//		argsList.add("-stats");
+//		argsList.add("1");
+		argsList.add("-repeat");
+		argsList.add("20");
     	copra.run(argsList.toArray(new String[0]));
     }
 

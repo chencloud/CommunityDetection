@@ -84,16 +84,16 @@ public class MLPA extends LPA{
 				coms.get(comId).add(vs[i]);
 			}
 		}
-		List<Long> tempDelete = new ArrayList<Long>();
-		for(Entry<Long,Collection<Vertex>> entry:coms.entrySet()) {
-			if(entry.getValue().size() == vs.length)
-				tempDelete.add(entry.getKey());
-		}
-		if(!tempDelete.isEmpty()){
-			for(Long delId:tempDelete){
-				coms.remove(delId);
-			}
-		}
+//		List<Long> tempDelete = new ArrayList<Long>();
+//		for(Entry<Long,Collection<Vertex>> entry:coms.entrySet()) {
+//			if(entry.getValue().size() == vs.length)
+//				tempDelete.add(entry.getKey());
+//		}
+//		if(!tempDelete.isEmpty()){
+//			for(Long delId:tempDelete){
+//				coms.remove(delId);
+//			}
+//		}
 		List<Entry<Long,Collection<Vertex>>> comms = new ArrayList<Entry<Long,Collection<Vertex>>>(coms.entrySet());
 		System.out.println("before Community Size="+comms.size());
 		for(int i=0;i<comms.size();i++) {
