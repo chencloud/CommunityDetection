@@ -40,6 +40,7 @@ public class SLPA extends LPA{
 		//不采用节点里面的value,采用communityDistribution
 		Vertex[] vs = this.graph.getVertices().toArray(new Vertex[0]);
 		for(int i=0;i<vs.length;i++) {
+			vs[i].setValue(null);
 			vs[i].getCommunityDistribution().clear();
 			vs[i].getCommunityDistribution().put(vs[i].getId(), 1.0);
 		}
@@ -66,7 +67,6 @@ public class SLPA extends LPA{
 		Map<Long,Collection<Vertex>> coms = new HashMap<Long,Collection<Vertex>>();
 		
 		for(int i=0;i<vs.length;i++) {
-			vs[i].setValue(null);
 			for(Entry<Long,Double> entry:vs[i].getCommunityDistribution().entrySet()) {
 				Long comId = entry.getKey();
 				if(!coms.containsKey(comId)) {
@@ -117,13 +117,13 @@ public class SLPA extends LPA{
 						}
 					}
 				}
-				System.out.println(isSame);
+//				System.out.println(isSame);
 				if(isSame){
 					if(comms.get(i).getValue().size()<comms.get(j).getValue().size()){
 						comms.get(i).getValue().clear();
 						comms.get(i).getValue().addAll(comms.get(j).getValue());
 					}
-					System.out.println(comms.get(j).getKey());
+//					System.out.println(comms.get(j).getKey());
 					comms.remove(j);
 					j= i+1;
 				}

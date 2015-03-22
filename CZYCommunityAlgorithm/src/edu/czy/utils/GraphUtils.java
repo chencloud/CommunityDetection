@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 
 import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
+import edu.czy.load.LoadEdgeFile;
+import edu.czy.load.LoadGML;
 import edu.uci.ics.jung.graph.SparseGraph;
 
 public class GraphUtils {
@@ -155,7 +157,7 @@ public class GraphUtils {
 		Map<String,Collection<Vertex>> results = new HashMap<String,Collection<Vertex>>();
 		for(Vertex v:graph.getVertices()) {
 			String values = v.getValue();
-			if(values.split(GraphUtils.OverlapNode_Split).length>1) {
+			if(values!=null && values.split(GraphUtils.OverlapNode_Split).length>1) {
 				for(String value:values.split(GraphUtils.OverlapNode_Split)) {
 					if(!results.containsKey(value)) {
 						results.put(value, new ArrayList<Vertex>());
@@ -257,5 +259,16 @@ public class GraphUtils {
 			}
 			System.out.println();
 		}
+	}
+	public static SparseGraph<Vertex,Edge> loadFileToGraph(String filename) {
+		SparseGraph<Vertex,Edge> graph = null;
+		if(filename.endsWith(".gml")){
+			LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
+			graph=loadGML.loadGraph(filename);
+		} else if(filename.endsWith(".net")) {
+			LoadEdgeFile<Vertex,Edge> loadEdge = new LoadEdgeFile<Vertex,Edge>(Vertex.class,Edge.class);
+			graph = loadEdge.loadGraph(filename);
+		}
+		return graph;
 	}
 }

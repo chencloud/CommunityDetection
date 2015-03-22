@@ -17,6 +17,14 @@ public class MeasureCollections {
 			Collection<Collection<Integer>> partitionTrue,int nodeCount){
 		return NMIMeasure.NMIPartition1(partition, partitionTrue, nodeCount);
 	}
+	public static double calculateNMILFK(Collection<Collection<Integer>> partition,
+			Collection<Collection<Integer>> partitionTrue,int nodeCount){
+		return OverlapNMI.NMIPartitionLFK(partition, partitionTrue, nodeCount);
+	}
+	public static double calculateNMIMax(Collection<Collection<Integer>> partition,
+			Collection<Collection<Integer>> partitionTrue,int nodeCount){
+		return OverlapNMI.NMIPartitionMax(partition, partitionTrue, nodeCount);
+	}
 	public static double calculateQovWithVertex(Collection<Collection<Vertex>> comms,SparseGraph<Vertex,Edge> graph) {
 		return new ModularityOverlap(graph).modOverlap(comms);
 	}
