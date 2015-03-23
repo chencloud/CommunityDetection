@@ -21,7 +21,7 @@ public class LPAM extends LPA{
 	}
 
 	public LPAM(SparseGraph<Vertex, Edge> g, int iteration) {
-		super(g, iteration);
+		super(g, iteration,false);
 		this.communityDegree = new HashMap<String,Integer>();
 		this.iteration = iteration;
 		init();

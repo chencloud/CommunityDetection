@@ -16,12 +16,14 @@ public abstract class LPA {
 	protected SparseGraph<Vertex,Edge> graph;
 	protected Map<Long,Vertex> nodeMap;
 	protected int iteration;
-	public LPA(SparseGraph<Vertex,Edge> g,int itera) {
+	public LPA(SparseGraph<Vertex,Edge> g,int itera,boolean initNodeMap) {
 		this.iteration = itera;
 		this.graph = g;
-		this.nodeMap = new HashMap<Long,Vertex>();
-		for(Vertex v:g.getVertices()){
-			nodeMap.put(v.getId(), v);
+		if(initNodeMap) {
+			this.nodeMap = new HashMap<Long,Vertex>();
+			for(Vertex v:g.getVertices()){
+				nodeMap.put(v.getId(), v);
+			}
 		}
 	}
 	public abstract void init();

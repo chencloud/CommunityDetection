@@ -41,7 +41,7 @@ public class GraphStatistic {
 		System.out.println("AvgPathLength="+calculateAvgPathLength(graph));
 		System.out.println("MaxPathLength="+getMaxPathLength(graph));
 	}
-	private static int getMaxPathLength(SparseGraph<Vertex, Edge> graph) {
+	public static int getMaxPathLength(SparseGraph<Vertex, Edge> graph) {
 		// TODO Auto-generated method stub
 		DijkstraDistance<Vertex, Edge> dist = new DijkstraDistance<Vertex, Edge>(graph);
 		int maxLen = 0;
@@ -58,6 +58,19 @@ public class GraphStatistic {
 			}
 		}
 		return maxLen;
+	}
+	public static double[] calculateAvgStd(double[] values) {
+		double[] result = new double[2];
+		double sumV = 0.0;
+		for(int i=0;i<values.length;i++)
+			sumV += values[i];
+		result[0] = sumV/(1.0*values.length);
+		sumV = 0;
+		for(int i=0; i<values.length; i++) {
+			sumV += (values[i]-result[0])*(values[i]-result[0]);
+		}
+		result[1] = Math.sqrt(sumV/(1.0*values.length));
+		return result;
 	}
 	public static void main(String[] args){
 //		String filename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";

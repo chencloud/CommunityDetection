@@ -24,12 +24,12 @@ public class SLPA extends LPA{
 
 	public double r = 0.3;
 	public SLPA(SparseGraph<Vertex, Edge> g, int itera) {
-		super(g, itera);
+		super(g, itera,false);
 		// TODO Auto-generated constructor stub
 		init();
 	}
 	public SLPA(SparseGraph<Vertex, Edge> g, int itera,double r) {
-		super(g, itera);
+		super(g, itera, false);
 		this.r = r;
 		// TODO Auto-generated constructor stub
 		init();

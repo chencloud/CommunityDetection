@@ -21,7 +21,7 @@ public class LPAMM extends LPA{
 		// TODO Auto-generated constructor stub
 	}
 	public LPAMM(SparseGraph<Vertex, Edge> g, int itera) {
-		super(g, itera);
+		super(g, itera, true);
 		// TODO Auto-generated constructor stub
 	}
 

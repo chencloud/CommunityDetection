@@ -27,7 +27,7 @@ public class MLPA extends LPA{
 	public boolean isNormal = true;
 	public boolean isASync = true; 
 	public MLPA(SparseGraph<Vertex, Edge> g, int itera,double p) {
-		super(g, itera);
+		super(g, itera, false);
 		this.p = p;
 		// TODO Auto-generated constructor stub
 		init();

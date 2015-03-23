@@ -29,51 +29,17 @@ public class GraphNMF {
 	private Matrix adj_matrix;
 	private Matrix U;
 	private Matrix V;
+	private int k;//the hidden feature factor
+	private int itera;
+	private int itera_error;
+	private Map<Vertex,Integer> NodeIdMap;
+	private final double eps=Math.sqrt(2.2204e-16);
 	public Matrix getAdj_matrix() {
 		return adj_matrix;
 	}
 	public void setAdj_matrix(Matrix adj_matrix) {
 		this.adj_matrix = adj_matrix;
 	}
-	public Matrix getU() {
-		return U;
-	}
-	public void setU(Matrix u) {
-		U = u;
-	}
-	public Matrix getV() {
-		return V;
-	}
-	public void setV(Matrix v) {
-		V = v;
-	}
-	public int getK() {
-		return k;
-	}
-	public void setK(int k) {
-		this.k = k;
-	}
-	public int getItera() {
-		return itera;
-	}
-	public void setItera(int itera) {
-		this.itera = itera;
-	}
-	public int getItera_error() {
-		return itera_error;
-	}
-	public void setItera_error(int itera_error) {
-		this.itera_error = itera_error;
-	}
-	public double getEps() {
-		return eps;
-	}
-	private int k;//the hidden feature factor
-	private int itera;
-	private int itera_error;
-	private Map<Vertex,Integer> NodeIdMap;
-	private final double eps=Math.sqrt(2.2204e-16);
-	
 	public GraphNMF(SparseGraph<Vertex,Edge> g){
 		this(g,10,100,5);
 	}
@@ -335,5 +301,38 @@ public class GraphNMF {
 			}
 			System.out.println();
 		}
+	}
+	public Matrix getU() {
+		return U;
+	}
+	public void setU(Matrix u) {
+		U = u;
+	}
+	public Matrix getV() {
+		return V;
+	}
+	public void setV(Matrix v) {
+		V = v;
+	}
+	public int getK() {
+		return k;
+	}
+	public void setK(int k) {
+		this.k = k;
+	}
+	public int getItera() {
+		return itera;
+	}
+	public void setItera(int itera) {
+		this.itera = itera;
+	}
+	public int getItera_error() {
+		return itera_error;
+	}
+	public void setItera_error(int itera_error) {
+		this.itera_error = itera_error;
+	}
+	public double getEps() {
+		return eps;
 	}
 }

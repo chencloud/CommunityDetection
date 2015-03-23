@@ -28,7 +28,7 @@ public class StandardLPA extends LPA {
 	}
 
 	public StandardLPA(SparseGraph<Vertex, Edge> g, int iteration) {
-		super(g, iteration);
+		super(g, iteration, false);
 		this.iteration = iteration;
 		init();
 	}
