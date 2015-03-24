@@ -15,6 +15,7 @@ import edu.czy.load.LoadEdgeFile;
 import edu.czy.load.LoadGML;
 import edu.czy.load.LoadGroundTruthFile;
 import edu.czy.lpa.LPA;
+import edu.czy.lpa.LPAM;
 import edu.czy.lpa.NMFWLPA;
 import edu.czy.lpa.StandardLPA;
 import edu.czy.measure.MeasureCollections;
@@ -35,8 +36,12 @@ public class MainDriver {
 		if(isNMI)valuesNMI = new double[repeatNum];
 		for(int i=0; i<repeatNum; i++) {
 			//run algorithm;set algorithm
-			LPA nmfwlpa = new NMFWLPA(graph,1000,true,true);
-			nmfwlpa.run();
+//			LPA nmfwlpa = new NMFWLPA(graph,1000,true,true);
+//			nmfwlpa.run();
+//			LPA standardlpa = new StandardLPA(graph,1000);
+//			standardlpa.run();
+			LPA lpam = new LPAM(graph,1000);
+			lpam.run();
 			if(isQ){
 				valuesQ[i] = MeasureCollections.calculateQFromCollectionsWithVertex(graph, GraphUtils.exportCommunityCollectionWithVertex(graph));
 				if(valuesQ[i]>maxQ) maxQ = valuesQ[i];
@@ -79,7 +84,7 @@ public class MainDriver {
 			SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(basedir+filename[i]);
 			pw.println("N="+graph.getVertexCount()+";E="+graph.getEdgeCount());
 			//set parameter;
-			repeatRun(graph,50,true,false,pw);
+			repeatRun(graph,10,true,false,pw);
 			pw.println("++++++++++++++++++++++++++++++++++++++++++++++++\n");
 		}
 	}
@@ -89,14 +94,14 @@ public class MainDriver {
 		String[] truthNewworkFilenames = {
 				"karate\\karate.gml",
 				"dolphins\\dolphins.gml",
-//				"Internet\\Internet.gml",
+				"Internet\\Internet.gml",
 				"polbooks\\polbooks.gml",
 				"jazz\\jazz.net",
 				"email\\email.net",
 				"mexican\\mexican.net",
 				"pro-pro\\pro-pro.net",
 				"celegans_metabolic\\celegans_metabolic.net",
-//				"pgp\\pgp.net",
+				"pgp\\pgp.net",
 				"power_grid\\power_grid.gml"
 		};
 		String[] LFKNetworkFilenames = {
@@ -112,8 +117,10 @@ public class MainDriver {
 		};
 		PrintStream ps = null;
 		try {
-			ps = new PrintStream(new FileOutputStream("result_nmflpa_node_importtance.txt"));
-			RunMultiFile(basedir,truthNewworkFilenames,ps);
+//			ps = new PrintStream(new FileOutputStream("result_standardlpa_truenetwork.txt"));
+			ps = new PrintStream(new FileOutputStream("result_lpam_LFRnetwork.txt"));
+//			RunMultiFile(basedir,truthNewworkFilenames,ps);
+			RunMultiFile(basedir,LFKNetworkFilenames,ps);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

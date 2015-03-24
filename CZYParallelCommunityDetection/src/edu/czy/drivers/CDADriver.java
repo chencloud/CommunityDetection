@@ -12,10 +12,20 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
+import edu.czy.lpa.mapper.LabelInitMapper;
+import edu.czy.lpa.mapper.LabelUpdate1Mapper;
+import edu.czy.lpa.mapper.LabelUpdate2Mapper;
+import edu.czy.lpa.mapper.StopcheckMapper;
+import edu.czy.lpa.reducer.LabelInitReducer;
+import edu.czy.lpa.reducer.LabelUpdate1Reducer;
+import edu.czy.lpa.reducer.LabelUpdate2Reducer;
+import edu.czy.lpa.reducer.StopcheckReducer;
 import edu.czy.nmf.mapper.UMultiVMapper;
 import edu.czy.nmf.mapper.UUpdateMapper;
+import edu.czy.nmf.mapper.VUpdateMapper;
 import edu.czy.nmf.reducer.UMultiVReducer;
 import edu.czy.nmf.reducer.UUpdateReducer;
+import edu.czy.nmf.reducer.VUpdateReducer;
 import edu.czy.preprocess.mapper.AdjListMapper;
 import edu.czy.preprocess.mapper.LocalVertexMapper;
 import edu.czy.preprocess.mapper.UVInitMapper;
@@ -109,13 +119,14 @@ public class CDADriver {
 		//2 probablity for (Cmax-Cj)<=(Cmax-Cmin)*p;
 		//3 determine normal for U or not
 		if(args.length != 5) {
-			System.err.println("Usage: <edgefilePath> <iteration> <p_value(0,1)> <isnormal(0 or 1)> <nodeCount>");
+			System.err.println("Usage: <edgefilePath> <iteration> <p_value(0,1)> <isnormal(0 or 1)> <nodeCount> <iterationLPA>");
 		}
 		String edgeFilePath = args[0];
 		int iteration = Integer.valueOf(args[1]);
 		double pValue = Double.valueOf(args[2]);
 		int isNormal = Integer.valueOf(args[3]);
 		int nodeCount = Integer.valueOf(args[4]);
+		int iterationLPA = Integer.valueOf(args[5]);
 		Configuration conf = new Configuration();
 		String basedir = "/NMFLPA/";
 		
@@ -129,7 +140,7 @@ public class CDADriver {
 		job.setMapperClass(AdjListMapper.class);
 		job.setReducerClass(AdjListReducer.class);
 		job.setMapOutputKeyClass(VIntWritable.class);
-		job.setMapOutputValueClass(VIntWritable.class);
+		job.setMapOutputValueClass(Text.class);
 		job.setOutputKeyClass(VIntWritable.class);
 		job.setOutputValueClass(Text.class);
 		FileInputFormat.addInputPath(job, new Path(edgeFilePath));
@@ -167,7 +178,8 @@ public class CDADriver {
 				TextOutputFormat.class, IntWritable.class, Text.class);
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 		//nmf process
-		for( int i=1;i<=iteration;i++){
+		int i=1;
+		for(; i<=iteration; i++ ) {
 			conf.setInt("CurIteration", i);
 			//calculateU*V
 			job = new Job(conf, "NMF-UMultiV");
@@ -194,13 +206,83 @@ public class CDADriver {
 			FileInputFormat.addInputPath(job, new Path(basedir+"UV/VMatrix_"+String.valueOf(i-1)));
 			FileInputFormat.addInputPath(job, new Path(basedir+"adj/adjList"));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
-			MultipleOutputs.addNamedOutput(job, "VMatrix",
-					TextOutputFormat.class, IntWritable.class, Text.class);
-			//merge ,get UAdjList
-			//not realize
-			//delte older file i-1, delte UVMatrix_i;UMatrix_(i-1)
+			//merge ,Update V
+			job = new Job(conf, "NMF-UpdateV");
+			job.setJarByClass(CDADriver.class);
+			job.setMapperClass(VUpdateMapper.class);
+			job.setReducerClass(VUpdateReducer.class);
+			job.setMapOutputKeyClass(VIntWritable.class);
+			job.setMapOutputValueClass(Text.class);
+			job.setOutputKeyClass(VIntWritable.class);
+			job.setOutputValueClass(Text.class);
+			FileInputFormat.addInputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
+			FileOutputFormat.setOutputPath(job, new Path(basedir+"UV/VMatrix_"+String.valueOf(i)));
+			//delte older file i-1, delte UVMatrix_i;UMatrix_(i-1);VMatrix_(i-1);
 			
 		}
+		//lpa algorithm
+		//初始化
+		job = new Job(conf, "LabelInit");
+		job.setJarByClass(CDADriver.class);
+		job.setMapperClass(LabelInitMapper.class);
+		//job.setReducerClass(LabelInitReducer.class);
+		job.setMapOutputKeyClass(VIntWritable.class);
+		job.setMapOutputValueClass(Text.class);
+//		job.setOutputKeyClass(VIntWritable.class);
+//		job.setOutputValueClass(Text.class);
+		FileInputFormat.addInputPath(job, new Path(basedir+"adj/degree"));
+		FileOutputFormat.setOutputPath(job, new Path(basedir+"com/nodecom_0"));
+		conf.setInt("ComNum", nodeCount);
+		int curIteration = 1;
+		while(curIteration <= iterationLPA) {
+			int comNumber = conf.getInt("ComNum", nodeCount);
+			//update 标签
+			//update 1
+			job = new Job(conf, "LabelUpdated1");
+			job.setJarByClass(CDADriver.class);
+			job.setMapperClass(LabelUpdate1Mapper.class);
+			job.setReducerClass(LabelUpdate1Reducer.class);
+			job.setMapOutputKeyClass(VIntWritable.class);
+			job.setMapOutputValueClass(Text.class);
+			job.setOutputKeyClass(VIntWritable.class);
+			job.setOutputValueClass(Text.class);
+			FileInputFormat.addInputPath(job, new Path(edgeFilePath));
+			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration-1)));
+			FileInputFormat.addInputPath(job, new Path(basedir+"adj/degree"));
+			FileInputFormat.addInputPath(job, new Path(basedir+"UV/VMatrix_"+String.valueOf(i)));
+			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/nodetemp_"+String.valueOf(curIteration)));
+			//update 2
+			job = new Job(conf, "LabelUpdated2");
+			job.setJarByClass(CDADriver.class);
+			job.setMapperClass(LabelUpdate2Mapper.class);
+			job.setReducerClass(LabelUpdate2Reducer.class);
+			job.setMapOutputKeyClass(VIntWritable.class);
+			job.setMapOutputValueClass(Text.class);
+			job.setOutputKeyClass(VIntWritable.class);
+			job.setOutputValueClass(Text.class);
+			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodetemp_"+String.valueOf(curIteration)));
+			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration)));
+			//can delete node_temp_curiteration file
+			//检查停止条件
+			job = new Job(conf, "StopCheck");
+			job.setJarByClass(CDADriver.class);
+			job.setMapperClass(StopcheckMapper.class);
+			job.setReducerClass(StopcheckReducer.class);
+			job.setMapOutputKeyClass(VIntWritable.class);
+			job.setMapOutputValueClass(Text.class);
+			job.setOutputKeyClass(VIntWritable.class);
+			job.setOutputValueClass(Text.class);
+			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration)));
+//			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/node"+String.valueOf(curIteration)));		
+			//check stop condition or not
+			int curComNumber = conf.getInt("ComNum", nodeCount);
+			if(curComNumber == comNumber) {
+				break;
+			} else {
+				curIteration += 1;
+			}
+		}
+		//后处理，合并
 
 	}
 }
