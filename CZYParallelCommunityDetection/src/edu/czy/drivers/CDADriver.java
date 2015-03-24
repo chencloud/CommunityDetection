@@ -249,7 +249,7 @@ public class CDADriver {
 			FileInputFormat.addInputPath(job, new Path(edgeFilePath));
 			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration-1)));
 			FileInputFormat.addInputPath(job, new Path(basedir+"adj/degree"));
-			FileInputFormat.addInputPath(job, new Path(basedir+"UV/VMatrix_"+String.valueOf(i)));
+			FileInputFormat.addInputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/nodetemp_"+String.valueOf(curIteration)));
 			//update 2
 			job = new Job(conf, "LabelUpdated2");
@@ -261,15 +261,16 @@ public class CDADriver {
 			job.setOutputKeyClass(VIntWritable.class);
 			job.setOutputValueClass(Text.class);
 			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodetemp_"+String.valueOf(curIteration)));
+			FileInputFormat.addInputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration)));
-			//can delete node_temp_curiteration file
+			//can delete node_temp_curiteration file  noecom_(curiteration-1)
 			//检查停止条件
 			job = new Job(conf, "StopCheck");
 			job.setJarByClass(CDADriver.class);
 			job.setMapperClass(StopcheckMapper.class);
 			job.setReducerClass(StopcheckReducer.class);
 			job.setMapOutputKeyClass(VIntWritable.class);
-			job.setMapOutputValueClass(Text.class);
+			job.setMapOutputValueClass(VIntWritable.class);
 			job.setOutputKeyClass(VIntWritable.class);
 			job.setOutputValueClass(Text.class);
 			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration)));
@@ -282,7 +283,7 @@ public class CDADriver {
 				curIteration += 1;
 			}
 		}
-		//后处理，合并
-
+		//后处理，合并删除子社区
+		
 	}
 }

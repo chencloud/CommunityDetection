@@ -24,7 +24,17 @@ public class LabelUpdate1Mapper extends Mapper<Object,Text,VIntWritable,Text>{
 	  protected void map(Object key, Text value, 
 	                     Context context) throws IOException, InterruptedException {
 	    String[] strs = value.toString().split("\\s");
-	    context.write(new VIntWritable(Integer.parseInt(strs[0])), new Text("c\t"+strs[0]+",1.0"));
+	    String label = strs[1];
+	    int id = Integer.parseInt(strs[0]);
+	    if("u".equals(label)) {
+	    	context.write(new VIntWritable(id), new Text("u\t"+strs[2]));
+	    } else if("d".equals(label)) {
+	    	context.write(new VIntWritable(id), new Text("d\t"+strs[2]));
+	    } else if("c".equals(label)) {
+	    	context.write(new VIntWritable(id), new Text("c\t"+strs[2]));
+	    } else {//±ß±í
+	    	context.write(new VIntWritable(id), new Text("e\t"+strs[1]));
+	    }
 	  }
 
 	  /**
