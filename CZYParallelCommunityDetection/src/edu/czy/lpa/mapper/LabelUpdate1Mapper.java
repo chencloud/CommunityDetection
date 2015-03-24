@@ -7,7 +7,7 @@ import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 
-public class StopcheckMapper extends Mapper<Object,Text,VIntWritable,Text>{
+public class LabelUpdate1Mapper extends Mapper<Object,Text,VIntWritable,Text>{
 	  /**
 	   * Called once at the beginning of the task.
 	   */

@@ -7,7 +7,7 @@ import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
-public class StopcheckReducer extends Reducer<VIntWritable,Text,VIntWritable,Text>{
+public class LabelUpdate2Reducer extends Reducer<VIntWritable,Text,VIntWritable,Text>{
 
 	@Override
 	 protected void setup(Context context
@@ -25,5 +25,4 @@ public class StopcheckReducer extends Reducer<VIntWritable,Text,VIntWritable,Tex
 		// NOTHING
 	}
 }
-
 

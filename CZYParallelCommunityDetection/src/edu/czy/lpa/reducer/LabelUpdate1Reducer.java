@@ -1,13 +1,15 @@
 package edu.czy.lpa.reducer;
 
 import java.io.IOException;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
-public class StopcheckReducer extends Reducer<VIntWritable,Text,VIntWritable,Text>{
+public class LabelUpdate1Reducer extends Reducer<VIntWritable,Text,VIntWritable,Text>{
 
 	@Override
 	 protected void setup(Context context
@@ -25,5 +27,4 @@ public class StopcheckReducer extends Reducer<VIntWritable,Text,VIntWritable,Tex
 		// NOTHING
 	}
 }
-
 
