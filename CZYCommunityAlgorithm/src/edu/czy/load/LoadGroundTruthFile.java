@@ -147,7 +147,7 @@ public class LoadGroundTruthFile {
 				String[] strs = line.split(delim);
 				results.put(String.valueOf(linecount), new ArrayList<Integer>());
 				for(int i=0;i<strs.length;i++) {
-					results.get(linecount).add(Integer.parseInt(strs[i]));
+					results.get(String.valueOf(linecount)).add(Integer.parseInt(strs[i]));
 				}
 			}
 		} catch (Exception e) {

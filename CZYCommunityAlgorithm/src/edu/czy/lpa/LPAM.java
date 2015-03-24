@@ -90,9 +90,9 @@ public class LPAM extends LPA{
 		return true;
 	}
 	public static void  main(String[] args) {
-		String gmlfilename="J:\\paperproject\\DataSet\\karate\\karate.gml";
-		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
-		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
+//		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+		String filename="E:\\dataset\\unweight_dataset\\toy_network\\toy_network.net";
+		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		LPA lpam = new LPAM(graph,10000);
 		lpam.run();
 		Collection<Collection<Vertex>> coms = lpam.getCommunitysByVertex();

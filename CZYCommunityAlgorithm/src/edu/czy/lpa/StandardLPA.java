@@ -103,9 +103,8 @@ public class StandardLPA extends LPA {
 		return true;
 	}
 	public static void  main(String[] args) {
-		String gmlfilename="J:\\paperproject\\DataSet\\karate\\karate.gml";
-		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
-		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
+		String filename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
+		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		LPA standardlpa = new StandardLPA(graph,10000);
 		standardlpa.run();
 		Collection<Collection<Vertex>> coms = standardlpa.getCommunitysByVertex();

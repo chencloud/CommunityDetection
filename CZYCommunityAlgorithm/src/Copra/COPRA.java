@@ -12,6 +12,8 @@ import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
 import edu.czy.export.ExportFile;
 import edu.czy.load.LoadGML;
+import edu.czy.load.LoadGroundTruthFile;
+import edu.czy.measure.MeasureCollections;
 import edu.czy.utils.GraphUtils;
 import edu.uci.ics.jung.graph.SparseGraph;
 
@@ -1282,16 +1284,23 @@ label0:
 		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		ExportFile.exportAsEdgeFile(graph, "copra_temp.edge");
 		argsList.add("copra_temp.edge");
-		argsList.add("-vs");
+		argsList.add("-v");
 		argsList.add("1");
-		argsList.add("10");
+//		argsList.add("10");
 		argsList.add("-mo");
 //		argsList.add("-extrasimplify");
 //		argsList.add("-stats");
 //		argsList.add("1");
-		argsList.add("-repeat");
-		argsList.add("20");
-    	copra.run(argsList.toArray(new String[0]));
+//		argsList.add("-repeat");
+//		argsList.add("20");
+		copra.run(argsList.toArray(new String[0]));
+		Collection<Collection<Integer>> result = 
+				LoadGroundTruthFile.loadGroundTruthCommunityPerLine("clusters-copra_temp.edge","\\s");
+    	System.out.println("Qov="+
+		MeasureCollections.calculateQovFromCollectionsWithInteger(graph, result));
+    	
+    	
+    	
     }
 
 }

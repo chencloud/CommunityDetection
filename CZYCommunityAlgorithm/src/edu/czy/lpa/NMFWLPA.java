@@ -3,8 +3,10 @@ package edu.czy.lpa;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -27,11 +29,12 @@ import edu.uci.ics.jung.graph.SparseGraph;
  * wij_6 = r*wij_4 + (1-r)*blong_cj;
  */
 public class NMFWLPA extends LPA{
-	private static final double EPSION = 0.00000000001;
+	private static final double EPSION = 0.0000000001;
 	private Map<Integer,Vertex> node_map;
-
+	private int labelNum ;
 	private boolean isAsyncUpdate ;
 	private boolean isRandomOrder;
+	private double lamda = 0.5;
 	public NMFWLPA(SparseGraph<Vertex,Edge> g,int iteration,boolean isAsyncUpdate,boolean isRandomOrder)
 	{
 		super(g,iteration,false);
@@ -78,6 +81,8 @@ public class NMFWLPA extends LPA{
 			}
 			if(isLocalCenter)k += 1;
 		}
+		if(k<=1)k = 2;
+		System.out.println("localVertex k="+k);
 		NMFFactorization(adjMatrix,k,100,5);
 	}
 	private void NMFFactorization(double[][] adjMatrix,int k,int iteration,int iterationError) {
@@ -95,6 +100,7 @@ public class NMFWLPA extends LPA{
 	}
 	private void initNodeLabel() {
 		// TODO Auto-generated method stub
+		this.labelNum = this.graph.getVertexCount();
 		for(Vertex v:this.graph.getVertices()) {
 			v.getCommunityDistribution().put(v.getId(), 1.0);
 		}
@@ -148,6 +154,7 @@ public class NMFWLPA extends LPA{
 				node_com_map.get(v[i].getId()).putAll(v[i].getCommunityDistribution());
 			}
 		}
+		Set<Long> labelSet = new HashSet<Long>();
 		//Update the label of each vertex according to its neigbors' label
 		Map<Long,Double> hashmap = new HashMap<Long,Double>();
 		double maxValue=0;
@@ -171,10 +178,17 @@ public class NMFWLPA extends LPA{
 					double node_importance = NodeImportance.getSmoothDegreeImportance(graph, neigV);
 //					double node_importance = NodeImportance.getPageRankImportance(graph, v);
 					double node_difference = GraphUtils.calcalueEducianSimilarity(curV, neigV);
-					double community_blong = this.getCommunityBlong(neigV, Vlabel, node_com_map);
+					double community_blong = 
+						this.getCommunityBlong(neigV, Vlabel, node_com_map);
+//							Vlabel_value/(1.0+Vlabel_value);
 					double count=hashmap.get(Vlabel);
-//					count += Math.sqrt(node_difference*node_importance)*community_blong;
-					count += node_importance;
+					count +=community_blong *Math.sqrt(node_difference *
+								node_importance);
+//					count += Math.sqrt((this.lamda*node_difference +(1.0-this.lamda)*node_importance)
+//							);//*community_blong);
+//					count += node_importance;
+//					count += node_difference;
+//					count += community_blong;
 					hashmap.put(Vlabel, count);
 //					System.out.println(Vlabel + ":" + count);
 				}
@@ -217,6 +231,11 @@ public class NMFWLPA extends LPA{
 				}
 			}
 		}
+//		if(labelSet.size() == this.labelNum)
+//			return false;
+//		else {
+//			this.labelNum = labelSet.size();return true;
+//		}
 		return isUpdated;
 	}
 	@Override
@@ -247,13 +266,19 @@ public class NMFWLPA extends LPA{
 					double node_importance = NodeImportance.getSmoothDegreeImportance(graph, neigV);
 //					double node_importance = NodeImportance.getPageRankImportance(graph, v);
 					double node_difference = GraphUtils.calcalueEducianSimilarity(curV, neigV);
-					double community_blong = this.getCommunityBlong(neigV, Vlabel);
+					double community_blong = 
+							this.getCommunityBlong(neigV, Vlabel);
+//								Vlabel_value/(1.0+Vlabel_value);
 					double count=hashmap.get(Vlabel);
-//					count += Math.sqrt(node_difference*node_importance)*community_blong;
-					count += node_importance;
+						count += this.lamda*(node_difference)+(1.0-lamda)*(node_importance);
+//					count += ((this.lamda*node_difference +(1.0-this.lamda)*node_importance)*community_blong);
+//						count += node_importance;
+//						count += node_difference;
+//						count += community_blong;
 					hashmap.put(Vlabel, count);
 //					System.out.println(Vlabel + ":" + count);
 				}
+				System.out.println("Vlabel value="+hashmap.get(Vlabel));
 				if(hashmap.get(Vlabel)-maxValue>0.0)
 				{
 					maxValue = hashmap.get(Vlabel);
@@ -457,18 +482,21 @@ public class NMFWLPA extends LPA{
 //		isUpdated=true;
 //	}
 	public static void main(String[] args) {
-		String filename="E:\\dataset\\unweight_dataset\\Internet\\Internet.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\Karate\\Karate.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
+		String filename="E:\\dataset\\unweight_dataset\\toy_network\\toy_network.net";
 		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
-		LPA nmfwlpa = new NMFWLPA(graph,10000,true,true);
+		LPA nmfwlpa = new NMFWLPA(graph,1000,true,true);
 		nmfwlpa.run();
 		Collection<Collection<Vertex>> coms = nmfwlpa.getCommunitysByVertex();
 		Collection<Collection<Integer>> comF = nmfwlpa.getCommunitysByInteger();
-		Collection<Collection<Integer>> comR = GraphUtils.exportCommunityGroundTruthCollection(graph);
+//		Collection<Collection<Integer>> comR = GraphUtils.exportCommunityGroundTruthCollection(graph);
 		GraphUtils.PrintCommunityCollections(comF, ";");
-		GraphUtils.PrintCommunityCollections(comR, ",");
+//		GraphUtils.PrintCommunityCollections(comR, ",");
 		double Q=MeasureCollections.calculateQFromCollectionsWithVertex(graph, coms);
-		double NMI = MeasureCollections.calculateNMI(comF, comR, graph.getVertexCount());
+//		double NMI = MeasureCollections.calculateNMI(comF, comR, graph.getVertexCount());
 		System.out.println("Modularrity Q="+Q);
-		System.out.println("NMI = "+NMI);
+//		System.out.println("NMI = "+NMI);
 	}
 }

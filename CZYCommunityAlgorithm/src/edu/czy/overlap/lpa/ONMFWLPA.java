@@ -15,6 +15,7 @@ import edu.czy.datastructure.Vertex;
 import edu.czy.factorization.GraphNMF;
 import edu.czy.importance.NodeImportance;
 import edu.czy.lpa.LPA;
+import edu.czy.measure.MeasureCollections;
 import edu.czy.utils.GraphUtils;
 import edu.czy.utils.RandomNumGenerator;
 import edu.uci.ics.jung.graph.SparseGraph;
@@ -28,13 +29,15 @@ public class ONMFWLPA extends LPA{
 	private int labelNum ;
 	private double p;
 	private boolean isNormal ;
-	private static final double EPSION = 0.00000000001;
+	private static final double EPSION = 0.0000000001;
+	private double lamda = 0.5;
 	private Map<Integer,Vertex> node_map;
 	public ONMFWLPA(SparseGraph<Vertex, Edge> g, int itera, double p, boolean isNormal) {
 		super(g, itera, false);
 		// TODO Auto-generated constructor stub
 		this.p = p;
 		this.isNormal = isNormal;
+		this.node_map = new HashMap<Integer,Vertex>();
 		init();
 		//不采用节点里面的value,采用communityDistribution
 		Vertex[] vs = this.graph.getVertices().toArray(new Vertex[0]);
@@ -81,6 +84,8 @@ public class ONMFWLPA extends LPA{
 			}
 			if(isLocalCenter)k += 1;
 		}
+		if(k<=1)k = 2;
+		System.out.println("localVertex k="+k);
 		NMFFactorization(adjMatrix,k,100,5);
 	}
 	private void NMFFactorization(double[][] adjMatrix,int k,int iteration,int iterationError) {
@@ -111,6 +116,7 @@ public class ONMFWLPA extends LPA{
 		Map<Long,Collection<Vertex>> coms = new HashMap<Long,Collection<Vertex>>();
 		
 		for(int i=0;i<vs.length;i++) {
+//			System.out.println(vs[i].getId()+":"+vs[i].getCommunityDistribution().size());
 			for(Entry<Long,Double> entry:vs[i].getCommunityDistribution().entrySet()) {
 				Long comId = entry.getKey();
 				if(!coms.containsKey(comId)) {
@@ -220,7 +226,8 @@ public class ONMFWLPA extends LPA{
 					double community_blong = c.getValue();
 					
 					double CommunityValue = 0;
-					CommunityValue += Math.sqrt(node_difference*node_importance)*community_blong;
+					CommunityValue += Math.sqrt((lamda*node_difference+(1-lamda)*node_importance)
+							*community_blong);
 					
 					if ( incomingVotes.containsKey(c.getKey()) ) 
 						CommunityValue += incomingVotes.get(c.getKey());
@@ -232,8 +239,8 @@ public class ONMFWLPA extends LPA{
 			
 			//Find the most popular vote
 			Iterator<Entry<Long, Double>> it = incomingVotes.entrySet().iterator();
-			double popularCommunityValue = Double.MAX_VALUE;
-			double unpopularCommunityValue = Double.MIN_VALUE;
+			double popularCommunityValue = Double.MIN_VALUE;
+			double unpopularCommunityValue =  Double.MAX_VALUE;
 			while ( it.hasNext() ) {
 				Entry<Long, Double> entry = it.next();
 				if ( entry.getValue() > popularCommunityValue ) {
@@ -246,12 +253,13 @@ public class ONMFWLPA extends LPA{
 			double throld_c_max = (popularCommunityValue-unpopularCommunityValue)*this.p;
 			Collection<Entry<Long, Double>> cols = new ArrayList<Entry<Long, Double>>();
 			cols.addAll(incomingVotes.entrySet());
-			
+//			System.out.println("Before\t"+listener.getId()+"\t"+incomingVotes.size());
 			for ( Entry<Long, Double> col:cols ) {
 				if ( (popularCommunityValue-col.getValue()) > throld_c_max ) {
 						incomingVotes.remove(col.getKey());
 				}
 			}
+//			System.out.println(listener.getId()+"\t"+incomingVotes.size());
 			//Update community distribution of the current node by 1
 			Iterator<Entry<Long, Double>> filteredit = incomingVotes.entrySet().iterator();
 			listener.getCommunityDistribution().clear();
@@ -274,7 +282,31 @@ public class ONMFWLPA extends LPA{
 		if(labelSet.size() == this.labelNum)
 			return false;
 		else {
-			this.labelNum = labelSet.size();return true;
+			this.labelNum = labelSet.size();
+			return true;
 		}
+	}
+	public static void main(String args[]) {
+//		String filename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
+		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
+		double p=0.0;
+		double maxQov = 0.0;
+		double maxp = 0.0;
+		for(;p<=1;p+=0.01)
+		{
+			LPA onmfwlpa = new ONMFWLPA(graph,1000,p,true);
+			onmfwlpa.run();
+			Collection<Collection<Vertex>> coms = onmfwlpa.getCommunitysByVertex();
+	//		GraphUtils.PrintCommunityCollectionsWithVertex(coms, ";");
+			double Qov = MeasureCollections.calculateQovWithVertex(coms, graph);
+			if(Qov > maxQov){
+				maxQov = Qov;
+				maxp = p;
+			}
+			System.out.println("p="+p+" ;Modularity Qov = "+Qov);
+		}
+		System.out.println("max p="+maxp+" ;Maximun Modularity Qov = "+maxQov);
 	}
 }

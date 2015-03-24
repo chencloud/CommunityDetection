@@ -103,9 +103,8 @@ public class LPAMM extends LPA{
 	}
 	
 	public static void  main(String[] args) {
-		String gmlfilename="J:\\paperproject\\DataSet\\karate\\karate.gml";
-		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
-		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
+		String filename="E:\\dataset\\unweight_dataset\\toy_network\\toy_network.net";
+		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		LPA lpamm = new LPAMM(graph,10000);
 		lpamm.run();
 		Collection<Collection<Vertex>> coms = lpamm.getCommunitysByVertex();

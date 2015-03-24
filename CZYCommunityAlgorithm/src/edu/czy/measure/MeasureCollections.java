@@ -61,7 +61,7 @@ public class MeasureCollections {
 		for(Collection<Integer> com :coms) {
 			Collection<Vertex> newCom = new ArrayList<Vertex>();
 			for(Integer id : com) {
-				newCom.add(nodeMap.get(id));
+				newCom.add(nodeMap.get((long)id));
 			}
 			comVertexs.add(newCom);
 		}
