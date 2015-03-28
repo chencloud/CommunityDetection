@@ -86,7 +86,7 @@ public class MeasureCollections {
 		List<Vertex> vertices = new ArrayList<Vertex>(com);
 		Collection<Vertex> neighborVertices;
 		Vertex vi, vj;
-		for (int i = 0; i < vertices.size() - 1; i++) {
+		for (int i = 0; i < vertices.size(); i++) {
 			vi = vertices.get(i);
 			neighborVertices = graph.getNeighbors(vi);
 			ki = graph.degree(vi);
