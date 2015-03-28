@@ -52,11 +52,10 @@ public class LPAMM extends LPA{
 			//calculate all community pairs
 			double current_Q = 
 						MeasureCollections.calculateQFromCollectionsWithInteger(graph, comMap.values(),this.nodeMap);
-//			System.out.println(current_Q);
 			for(Entry<String,Collection<Integer>> com1:comMap.entrySet()) {
 				for(Entry<String,Collection<Integer>> com2:comMap.entrySet()) {
-					if(!com1.getKey().trim().equals(com2.getKey().trim())&&(Integer.valueOf(com1.getKey())<Integer.valueOf(com2.getKey()))){
-						String newComId = com1.getKey().trim()+"+"+com2.getKey().trim();
+					if(!com1.getKey().trim().equals(com2.getKey().trim())){
+						String newComId = com1.getKey().trim()+"+"+com1.getKey().trim();
 						Set<Integer> newCom = new HashSet<Integer>();
 						newCom.addAll(com1.getValue());
 						newCom.addAll(com2.getValue());
@@ -64,7 +63,6 @@ public class LPAMM extends LPA{
 						comComparedMap.remove(com2.getKey());
 						comComparedMap.put(newComId, newCom);
 						double newQ = MeasureCollections.calculateQFromCollectionsWithInteger(graph, comComparedMap.values(),this.nodeMap);
-						//System.out.println(newQ);
 						if(newQ-current_Q > 0){
 							if(max_deltaQ < (newQ-current_Q)){
 								max_deltaQ = newQ-current_Q;
@@ -78,10 +76,9 @@ public class LPAMM extends LPA{
 					}
 				}
 			}
-//			System.out.println(max_coms_id);
 			if(max_deltaQ > 0.0 && !"".equals(max_coms_id)) {
 				//merge com_i and com_j
-				String[] ids = max_coms_id.split("\\+");
+				String[] ids = max_coms_id.split("+");
 				Set<Integer> newCom = new HashSet<Integer>();
 				newCom.addAll(comMap.get(ids[0]));
 				newCom.addAll(comMap.get(ids[1]));
@@ -106,7 +103,7 @@ public class LPAMM extends LPA{
 	}
 	
 	public static void  main(String[] args) {
-		String filename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";
+		String filename="E:\\dataset\\unweight_dataset\\toy_network\\toy_network.net";
 		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		LPA lpamm = new LPAMM(graph,10000);
 		lpamm.run();

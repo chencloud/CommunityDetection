@@ -13,7 +13,6 @@ import java.util.Random;
 import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
 import edu.czy.factorization.GraphNMF;
-import edu.czy.factorization.GraphNMFNew;
 import edu.czy.importance.NodeImportance;
 import edu.czy.load.LoadGML;
 import edu.czy.measure.MeasureCollections;
@@ -44,8 +43,7 @@ public class NMFWLPA extends LPA{
 		this.node_map = new HashMap<Integer,Vertex>();
 		this.isAsyncUpdate = isAsyncUpdate;
 		this.isRandomOrder = isRandomOrder;
-		//init();
-		initNew();
+		init();
 		initNodeLabel();
 	}
 	@Override
@@ -86,51 +84,6 @@ public class NMFWLPA extends LPA{
 		if(k<=1)k = 2;
 		System.out.println("localVertex k="+k);
 		NMFFactorization(adjMatrix,k,100,5);
-	}
-	public void initNew() {
-		// TODO Auto-generated method stub
-		int nodeCount = this.graph.getVertexCount();
-		for(Vertex v:this.graph.getVertices()) {
-			this.node_map.put(nodeCount, v);
-			v.nodeInteger = nodeCount;
-			--nodeCount;
-		}
-		//找到所有的极大点
-		int k = 0;
-		Set<Long> localnodeSet = new HashSet<Long>();
-		for(Vertex v:this.graph.getVertices()) {
-			boolean isLocalCenter = true;
-			for(Vertex neighV:this.graph.getNeighbors(v)) {
-				if(this.graph.degree(neighV)>this.graph.degree(v)) {
-					isLocalCenter = false;
-				} 
-				else if(this.graph.degree(neighV)== this.graph.degree(v)&&localnodeSet.contains(neighV.getId())) {
-					isLocalCenter = false;
-				}
-			}
-			if(isLocalCenter) {
-				k += 1;
-				localnodeSet.add(v.getId());
-			}
-		}
-		if( k<=1 )k = 2;
-		localnodeSet.clear();localnodeSet = null;
-		System.out.println("localVertex k="+k);
-		NMFFactorizationNew(graph,this.node_map,k,100,5);
-	}
-	private void NMFFactorizationNew(SparseGraph<Vertex, Edge> graph,
-			Map<Integer, Vertex> nodeMap, int k, int iteration, int iterationError) {
-		// TODO Auto-generated method stub
-		GraphNMFNew nmf = new GraphNMFNew(graph,nodeMap,k,iteration,iterationError);
-		nmf.trainSymmetric(true);
-		double[][] U = nmf.getU();
-		for(int i=0;i<U.length;i++) {
-			Vertex v = this.node_map.get(i+1);
-			List<Double> ws = new ArrayList<Double>();
-			for(int j=1;j<U[i].length;j++)
-				ws.add(U[i][j]);
-			v.setWeight(ws);
-		}
 	}
 	private void NMFFactorization(double[][] adjMatrix,int k,int iteration,int iterationError) {
 		// TODO Auto-generated method stub
@@ -313,8 +266,8 @@ public class NMFWLPA extends LPA{
 					double node_importance = NodeImportance.getSmoothDegreeImportance(graph, neigV);
 //					double node_importance = NodeImportance.getPageRankImportance(graph, v);
 					double node_difference = GraphUtils.calcalueEducianSimilarity(curV, neigV);
-//					double community_blong = 
-//							this.getCommunityBlong(neigV, Vlabel);
+					double community_blong = 
+							this.getCommunityBlong(neigV, Vlabel);
 //								Vlabel_value/(1.0+Vlabel_value);
 					double count=hashmap.get(Vlabel);
 						count += this.lamda*(node_difference)+(1.0-lamda)*(node_importance);
@@ -325,7 +278,7 @@ public class NMFWLPA extends LPA{
 					hashmap.put(Vlabel, count);
 //					System.out.println(Vlabel + ":" + count);
 				}
-//				System.out.println("Vlabel value="+hashmap.get(Vlabel));
+				System.out.println("Vlabel value="+hashmap.get(Vlabel));
 				if(hashmap.get(Vlabel)-maxValue>0.0)
 				{
 					maxValue = hashmap.get(Vlabel);
@@ -342,7 +295,7 @@ public class NMFWLPA extends LPA{
 			//random choose one
 			if(arrayLabels.size() > 1)
 			{
-//				System.out.println("Vertex "+curV.getId()+" multiLabel Occur");
+				System.out.println("Vertex "+curV.getId()+" multiLabel Occur");
 				int rIndex=RandomNumGenerator.getRandomInt(arrayLabels.size());
 				if(curLabel == arrayLabels.get(rIndex)){
 					double vCount = 1;
@@ -532,8 +485,7 @@ public class NMFWLPA extends LPA{
 //		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
 //		String filename="E:\\dataset\\unweight_dataset\\Karate\\Karate.gml";
 //		String filename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
-//		String filename="E:\\dataset\\unweight_dataset\\power_grid\\power_grid.gml";
-		String filename="E:\\dataset\\unweight_dataset\\LFKnetwork\\500000.gml";
+		String filename="E:\\dataset\\unweight_dataset\\toy_network\\toy_network.net";
 		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		LPA nmfwlpa = new NMFWLPA(graph,1000,true,true);
 		nmfwlpa.run();

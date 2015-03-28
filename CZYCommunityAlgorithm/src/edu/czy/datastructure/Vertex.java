@@ -21,7 +21,6 @@ public class Vertex {
 	private String groundTruth;
 	private List<Double> weight;
 	private Map<Long,Double> communityDistribution;
-	public int nodeInteger;
 	/**
 	 * @return the groundTruth
 	 */
