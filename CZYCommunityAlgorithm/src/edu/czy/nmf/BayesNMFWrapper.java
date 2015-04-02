@@ -1,5 +1,7 @@
 package edu.czy.nmf;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -95,13 +97,85 @@ public class BayesNMFWrapper {
 	}
 	
 	public static void main(String[] args) {
-		String gmlfilename="J:\\paperproject\\DataSet\\karate\\karate.gml";
-		LoadGML<Vertex,Edge> loadGML=new LoadGML<Vertex,Edge>(Vertex.class,Edge.class);
-		SparseGraph<Vertex,Edge> graph=loadGML.loadGraph(gmlfilename);
-		BayesNMFWrapper bnmfw = new BayesNMFWrapper(graph);
-		Collection<Collection<Vertex>> coms = bnmfw.run();
-		GraphUtils.PrintCommunityCollectionsWithVertex(coms, ";");
-		double Q = MeasureCollections.calculateQFromCollectionsWithVertex(graph, coms);
-		System.out.println("Modularity Q = "+Q);
+		String basedir = "E:\\dataset\\unweight_dataset\\";
+		String[] truthNewworkFilenames = {
+				"karate\\karate.gml",
+				"dolphins\\dolphins.gml",
+				"football\\football.gml",
+				"polbooks\\polbooks.gml",
+				"jazz\\jazz.net",
+				"mexican\\mexican.net",
+				"adjnoun\\adjnoun.gml",
+				"celegans_metabolic\\celegans_metabolic.net",
+				"email\\email.net",
+				"pro-pro\\pro-pro.net",
+				"power_grid\\power_grid.gml",
+				"pgp\\pgp.net",
+				"Internet\\Internet.gml",
+				"LFKnetwork\\100.gml",
+				"LFKnetwork\\500.gml",
+				"LFKnetwork\\1000.gml",
+				"LFKnetwork\\5000.gml",
+				"LFKnetwork\\10000.gml",
+				"LFKnetwork\\50000.gml",
+				"LFKnetwork\\100000.gml",
+				"LFKnetwork\\500000.gml",
+				"LFKnetwork\\1000000.gml"
+		};
+		int lengths = truthNewworkFilenames.length;
+		String storeFilename = "G:\\2015硕士毕业论文资料\\实验结果\\BayesNMF.txt";
+		PrintStream ps = null;
+		try {
+//			ps = new PrintStream(new FileOutputStream(storeFilename));
+			ps = new PrintStream(System.out);
+			int i=16;
+//			for(;i< lengths; i++) 
+			{
+				SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(basedir+truthNewworkFilenames[i]);
+				BayesNMFWrapper bnmfw = new BayesNMFWrapper(graph);
+				Collection<Collection<Vertex>> coms = bnmfw.run();
+	//			GraphUtils.PrintCommunityCollectionsWithVertex(coms, ";");
+				ps.println("==============================================");
+				ps.println(truthNewworkFilenames[i]);
+				double Q = MeasureCollections.calculateQFromCollectionsWithVertex(graph, coms);
+				ps.println("Modularity Q = "+Q);
+				ps.println("==============================================");
+				Collection<Collection<Integer>> partition = new ArrayList<Collection<Integer>>();
+				for(Collection<Vertex> com : coms) {
+					Collection<Integer> p = new ArrayList<Integer>();
+					for(Vertex v: com) {
+						p.add((int)v.getId());
+					}
+					partition.add(p);
+				}
+				Collection<Collection<Integer>> partitionTrue = GraphUtils.exportCommunityGroundTruthCollection(graph);
+				double NMI = MeasureCollections.calculateNMI(partition, partitionTrue, graph.getVertexCount());
+				ps.println("NMI ="+NMI);
+				ps.println("GrouthTrueth Q="+MeasureCollections.calculateQFromCollectionsForTruth(graph, partitionTrue));
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}finally{
+			if(null != ps)ps.close();
+		}
 	}
+	/*
+	 * 
+==============================================
+football\football.gml
+Modularity Q = 0.603324116678066
+==============================================
+==============================================
+LFKnetwork\100.gml
+Modularity Q = 0.4701975666927124
+==============================================
+==============================================
+LFKnetwork\5000.gml
+k=100
+Modularity Q = 0.309729812725333
+==============================================
+==============================================
+NMI =0.5704334405976921
+GrouthTrueth Q=0.882365989576837
+	 */
 }

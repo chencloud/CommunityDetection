@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import edu.czy.datastructure.Edge;
 import edu.czy.datastructure.Vertex;
 import edu.czy.factorization.GraphNMF;
+import edu.czy.factorization.GraphNMFNew;
 import edu.czy.importance.NodeImportance;
 import edu.czy.lpa.LPA;
 import edu.czy.measure.MeasureCollections;
@@ -38,17 +39,54 @@ public class ONMFWLPA extends LPA{
 		this.p = p;
 		this.isNormal = isNormal;
 		this.node_map = new HashMap<Integer,Vertex>();
-		init();
-		//不采用节点里面的value,采用communityDistribution
-		Vertex[] vs = this.graph.getVertices().toArray(new Vertex[0]);
-		for(int i=0;i<vs.length;i++) {
-			vs[i].setValue(null);
-			vs[i].getCommunityDistribution().clear();
-			vs[i].getCommunityDistribution().put(vs[i].getId(), 1.0);
-		}
-		this.labelNum = vs.length;
+//		init();
+		initNew();
 	}
-	
+	public void initNew() {
+		// TODO Auto-generated method stub
+		int nodeCount = this.graph.getVertexCount();
+		for(Vertex v:this.graph.getVertices()) {
+			this.node_map.put(nodeCount, v);
+			v.nodeInteger = nodeCount;
+			--nodeCount;
+		}
+		//找到所有的极大点
+		int k = 0;
+		Set<Long> localnodeSet = new HashSet<Long>();
+		for(Vertex v:this.graph.getVertices()) {
+			boolean isLocalCenter = true;
+			for(Vertex neighV:this.graph.getNeighbors(v)) {
+				if(this.graph.degree(neighV)>this.graph.degree(v)) {
+					isLocalCenter = false;
+				} 
+				else if(this.graph.degree(neighV)== this.graph.degree(v)&&localnodeSet.contains(neighV.getId())) {
+					isLocalCenter = false;
+				}
+			}
+			if(isLocalCenter) {
+				k += 1;
+				localnodeSet.add(v.getId());
+			}
+		}
+		if( k<=1 )k = 2;
+		localnodeSet.clear();localnodeSet = null;
+		System.out.println("localVertex k="+k);
+		NMFFactorizationNew(graph,this.node_map,k,20,1);
+	}
+	private void NMFFactorizationNew(SparseGraph<Vertex, Edge> graph,
+			Map<Integer, Vertex> nodeMap, int k, int iteration, int iterationError) {
+		// TODO Auto-generated method stub
+		GraphNMFNew nmf = new GraphNMFNew(graph,nodeMap,k,iteration,iterationError);
+		nmf.trainSymmetric(true);
+		double[][] U = nmf.getU();
+		for(int i=0;i<U.length;i++) {
+			Vertex v = this.node_map.get(i+1);
+			List<Double> ws = new ArrayList<Double>();
+			for(int j=0;j<U[i].length;j++)
+				ws.add(U[i][j]);
+			v.setWeight(ws);
+		}
+	}
 	@Override
 	public void init() {
 		// TODO Auto-generated method stub
@@ -103,7 +141,19 @@ public class ONMFWLPA extends LPA{
 	}
 	@Override
 	public void run() {
-		Vertex[] vs = this.graph.getVertices().toArray(new Vertex[0]);	
+		run(this.p);
+	}
+	public void run(Double p) {
+		if(null!=p)this.p = p.doubleValue();
+		//不采用节点里面的value,采用communityDistribution
+		Vertex[] vs = this.graph.getVertices().toArray(new Vertex[0]);
+		for(int i=0;i<vs.length;i++) {
+			vs[i].setValue(null);
+			vs[i].getCommunityDistribution().clear();
+			vs[i].getCommunityDistribution().put(vs[i].getId(), 1.0);
+		}
+		this.labelNum = vs.length;
+		//Vertex[] vs = this.graph.getVertices().toArray(new Vertex[0]);	
 		for(int i=1;i<=this.iteration;i++) {
 //			System.out.println("the "+i+"th iteration");
 			
@@ -287,17 +337,18 @@ public class ONMFWLPA extends LPA{
 		}
 	}
 	public static void main(String args[]) {
-//		String filename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";
+		String filename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";
 //		String filename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
-		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
 		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
-		double p=0.0;
+		double p=0.1;
 		double maxQov = 0.0;
 		double maxp = 0.0;
-		for(;p<=1;p+=0.01)
+		ONMFWLPA onmfwlpa = new ONMFWLPA(graph,1000,p,false);
+		for(;p<=0.4;p+=0.01)
 		{
-			LPA onmfwlpa = new ONMFWLPA(graph,1000,p,true);
-			onmfwlpa.run();
+			
+			onmfwlpa.run(p);
 			Collection<Collection<Vertex>> coms = onmfwlpa.getCommunitysByVertex();
 	//		GraphUtils.PrintCommunityCollectionsWithVertex(coms, ";");
 			double Qov = MeasureCollections.calculateQovWithVertex(coms, graph);

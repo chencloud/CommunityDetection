@@ -308,12 +308,13 @@ public class MLPA extends LPA{
 	}
 	
 	public static void main(String args[]) {
-		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+		String filename="E:\\dataset\\unweight_dataset\\karate\\karate.gml";
 		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
 		double r=0.1;
 		double maxQov = 0.0;
 		double maxr = 0.0;
-		for(;r<=1;r+=0.01)
+//		for(;r<=1;r+=0.01)
 		{
 			MLPA mlpa = new MLPA(graph,10000000,r);
 			mlpa.run();
@@ -324,6 +325,7 @@ public class MLPA extends LPA{
 				maxQov = Qov;
 				maxr = r;
 			}
+			
 			System.out.println("r="+r+" ;Modularity Qov = "+Qov);
 		}
 		System.out.println("max r="+maxr+" ;Maximun Modularity Qov = "+maxQov);

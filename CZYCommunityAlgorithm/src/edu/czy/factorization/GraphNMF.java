@@ -176,7 +176,8 @@ public class GraphNMF {
 				for(int col=0;col<errorMatrix.getColumnDimension();col++)
 					curError+=errorMatrix.get(row, col);
 			System.out.println("curError="+curError);
-			if(curError<Error){
+			if(curError<Error)
+			{
 				Error=curError;
 //				System.out.println("Error="+Error);
 				this.U=tempU;
@@ -248,14 +249,20 @@ public class GraphNMF {
 				/*
 				 * estimate the error
 				 */
-				Matrix errorMatrix=this.adj_matrix.minus(ttempU.times(tempU.transpose()));
-				errorMatrix.arrayTimesEquals(errorMatrix);
-				double curError=0.0;
-				for(int row=0;row<errorMatrix.getRowDimension();row++)
-					for(int col=0;col<errorMatrix.getColumnDimension();col++)
-						curError+=errorMatrix.get(row, col);
-				tempU = ttempU;
-				tempV = tempU.transpose();
+//				Matrix errorMatrix=this.adj_matrix.minus(ttempU.times(tempU.transpose()));
+//				errorMatrix.arrayTimesEquals(errorMatrix);
+//				double curError=0.0;
+//				for(int row=0;row<errorMatrix.getRowDimension();row++)
+//					for(int col=0;col<errorMatrix.getColumnDimension();col++)
+//						curError+=errorMatrix.get(row, col);
+//				if(error > curError) 
+//				{
+//					error = curError;
+					tempU = ttempU;
+					tempV = tempU.transpose();
+//				} else {
+//					break;
+//				}
 
 			}
 			

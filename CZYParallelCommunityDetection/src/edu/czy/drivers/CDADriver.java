@@ -1,7 +1,9 @@
 package edu.czy.drivers;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.VIntWritable;
@@ -26,6 +28,12 @@ import edu.czy.nmf.mapper.VUpdateMapper;
 import edu.czy.nmf.reducer.UMultiVReducer;
 import edu.czy.nmf.reducer.UUpdateReducer;
 import edu.czy.nmf.reducer.VUpdateReducer;
+import edu.czy.postprocess.mapper.PostProcessAdjListMapper;
+import edu.czy.postprocess.mapper.PostProcessFinalMapper;
+import edu.czy.postprocess.mapper.PostProcessFirstMapper;
+import edu.czy.postprocess.reducer.PostProcessAdjListReducer;
+import edu.czy.postprocess.reducer.PostProcessFinalReducer;
+import edu.czy.postprocess.reducer.PostProcessFirstReducer;
 import edu.czy.preprocess.mapper.AdjListMapper;
 import edu.czy.preprocess.mapper.LocalVertexMapper;
 import edu.czy.preprocess.mapper.UVInitMapper;
@@ -68,7 +76,7 @@ public class CDADriver {
 //		// String maxTimediff=otherArgs[6];
 //		// if(!maxTimediff.equals(""))
 //		// maxTimeDiff=Integer.parseInt(maxTimediff);
-//		/* ������� */
+//		/* 保存参数 */
 //		conf.setInt("MaxHighWaySpeed", highwayMaxSpeed);
 //		conf.setInt("MaxRoadSpeed", roadwayMaxSpeed);
 //		conf.setInt("MaxDistance", maxdistance);
@@ -76,7 +84,7 @@ public class CDADriver {
 //		/*
 //		 * distribute the cache files of kakou info files
 //		 */
-//		// ��ʾʵ�����ֲ�ʽ�ļ�ϵͳ
+//		// 显示实例化分布式文件系统
 //		FileSystem hdfs_fs = DistributedFileSystem.get(conf);
 //		Path kakouInfoPath = new Path(kakouInfoTable);
 //		FileStatus[] fileLists = hdfs_fs.listStatus(kakouInfoPath);
@@ -134,6 +142,8 @@ public class CDADriver {
 		conf.setInt("isNormal", isNormal);
 		conf.setStrings("basedir", basedir);
 		conf.setInt("NodeCount",nodeCount);
+		// 显示实例化分布式文件系统
+		FileSystem hdfs_fs = DistributedFileSystem.get(conf);
 		//get the adjList
 		Job job = new Job(conf, "PreProcessAdjList");
 		job.setJarByClass(CDADriver.class);
@@ -160,9 +170,15 @@ public class CDADriver {
 		job.setOutputKeyClass(VIntWritable.class);
 		job.setOutputValueClass(Text.class);
 		FileInputFormat.addInputPath(job, new Path(basedir+"adj/localfind"));
+		FileOutputFormat.setOutputPath(job, new Path(basedir+"adj/kfind"));
 		System.exit(job.waitForCompletion(true) ? 0 : 1);
 		//can delete adj/localfind
-		
+//		/*
+//		 * OutFile exist or not
+//		 */
+//		if (hdfs_fs.exists(new Path(basedir+"adj/kfind"))) {
+//			hdfs_fs.delete(new Path(basedir+"adj/kfind"), true);
+//		}
 		//get UVInit
 		job = new Job(conf, "PreProcessUVInit");
 		job.setJarByClass(CDADriver.class);
@@ -192,6 +208,7 @@ public class CDADriver {
 			job.setOutputValueClass(Text.class);
 			FileInputFormat.addInputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i-1)));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"UV/UVMatrix_"+String.valueOf(i)));
+			System.exit(job.waitForCompletion(true) ? 0 : 1);
 			//calculate A*U U*UT*U U
 			job = new Job(conf, "NMF-UpdateU");
 			job.setJarByClass(CDADriver.class);
@@ -206,6 +223,7 @@ public class CDADriver {
 			FileInputFormat.addInputPath(job, new Path(basedir+"UV/VMatrix_"+String.valueOf(i-1)));
 			FileInputFormat.addInputPath(job, new Path(basedir+"adj/adjList"));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
+			System.exit(job.waitForCompletion(true) ? 0 : 1);
 			//merge ,Update V
 			job = new Job(conf, "NMF-UpdateV");
 			job.setJarByClass(CDADriver.class);
@@ -217,11 +235,15 @@ public class CDADriver {
 			job.setOutputValueClass(Text.class);
 			FileInputFormat.addInputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"UV/VMatrix_"+String.valueOf(i)));
+			System.exit(job.waitForCompletion(true) ? 0 : 1);
 			//delte older file i-1, delte UVMatrix_i;UMatrix_(i-1);VMatrix_(i-1);
+//			hdfs_fs.delete(new Path(basedir+"UV/UMatrix_"+String.valueOf(i-1)), true);
+//			hdfs_fs.delete(new Path(basedir+"UV/UVMatrix_"+String.valueOf(i)), true);
+//			hdfs_fs.delete(new Path(basedir+"UV/VMatrix_"+String.valueOf(i-1)), true);
 			
 		}
 		//lpa algorithm
-		//��ʼ��
+		//初始化
 		job = new Job(conf, "LabelInit");
 		job.setJarByClass(CDADriver.class);
 		job.setMapperClass(LabelInitMapper.class);
@@ -236,7 +258,7 @@ public class CDADriver {
 		int curIteration = 1;
 		while(curIteration <= iterationLPA) {
 			int comNumber = conf.getInt("ComNum", nodeCount);
-			//update ��ǩ
+			//update 标签
 			//update 1
 			job = new Job(conf, "LabelUpdated1");
 			job.setJarByClass(CDADriver.class);
@@ -251,6 +273,7 @@ public class CDADriver {
 			FileInputFormat.addInputPath(job, new Path(basedir+"adj/degree"));
 			FileInputFormat.addInputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/nodetemp_"+String.valueOf(curIteration)));
+			System.exit(job.waitForCompletion(true) ? 0 : 1);
 			//update 2
 			job = new Job(conf, "LabelUpdated2");
 			job.setJarByClass(CDADriver.class);
@@ -263,8 +286,9 @@ public class CDADriver {
 			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodetemp_"+String.valueOf(curIteration)));
 			FileInputFormat.addInputPath(job, new Path(basedir+"UV/UMatrix_"+String.valueOf(i)));
 			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration)));
-			//can delete node_temp_curiteration file  noecom_(curiteration-1)
-			//���ֹͣ����
+			System.exit(job.waitForCompletion(true) ? 0 : 1);
+			//can delete node_temp_curiteration file  nodecom_(curiteration-1)
+			//检查停止条件
 			job = new Job(conf, "StopCheck");
 			job.setJarByClass(CDADriver.class);
 			job.setMapperClass(StopcheckMapper.class);
@@ -275,6 +299,13 @@ public class CDADriver {
 			job.setOutputValueClass(Text.class);
 			FileInputFormat.addInputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration)));
 //			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/node"+String.valueOf(curIteration)));		
+			FileOutputFormat.setOutputPath(job, new Path(basedir+"com/node_"+String.valueOf(curIteration)));		
+			System.exit(job.waitForCompletion(true) ? 0 : 1);
+			//delete com/node_curiteration
+//			hdfs_fs.delete(new Path(basedir+"com/nodecom_"+String.valueOf(curIteration-1)), true);
+//			hdfs_fs.delete(new Path(basedir+"com/node_"+String.valueOf(curIteration)), true);
+//			hdfs_fs.delete(new Path(basedir+"com/nodetemp_"+String.valueOf(curIteration)), true);
+			
 			//check stop condition or not
 			int curComNumber = conf.getInt("ComNum", nodeCount);
 			if(curComNumber == comNumber) {
@@ -283,7 +314,44 @@ public class CDADriver {
 				curIteration += 1;
 			}
 		}
-		//�������ϲ�ɾ��������
+		//后处理，合并删除子社区
+		//获取社区-节点集合
+		job = new Job(conf, "PostProcessGetCommunity");
+		job.setJarByClass(CDADriver.class);
+		job.setMapperClass(PostProcessAdjListMapper.class);
+		job.setReducerClass(PostProcessAdjListReducer.class);
+		job.setMapOutputKeyClass(VIntWritable.class);
+		job.setMapOutputValueClass(Text.class);
+		job.setOutputKeyClass(VIntWritable.class);
+		job.setOutputValueClass(Text.class);
+		FileInputFormat.addInputPath(job, new Path(basedir+"com/nodecom_"+String.valueOf(curIteration)));
+		FileOutputFormat.setOutputPath(job, new Path(basedir+"postprocess/comAdjList"));
+		System.exit(job.waitForCompletion(true) ? 0 : 1);
+		//获取待删除社区
+		job = new Job(conf, "PostProcessDelCommunity");
+		job.setJarByClass(CDADriver.class);
+		job.setMapperClass(PostProcessFirstMapper.class);
+		job.setReducerClass(PostProcessFirstReducer.class);
+		job.setMapOutputKeyClass(VIntWritable.class);
+		job.setMapOutputValueClass(Text.class);
+		job.setOutputKeyClass(VIntWritable.class);
+		job.setOutputValueClass(Text.class);
+		FileInputFormat.addInputPath(job, new Path(basedir+"postprocess/comAdjList"));
+		FileOutputFormat.setOutputPath(job, new Path(basedir+"postprocess/comDel"));
+		System.exit(job.waitForCompletion(true) ? 0 : 1);
+		//删除被包含的社区，返回最终社区
+		job = new Job(conf, "PostProcessDelAndFinalMergeCommunity");
+		job.setJarByClass(CDADriver.class);
+		job.setMapperClass(PostProcessFinalMapper.class);
+		job.setReducerClass(PostProcessFinalReducer.class);
+		job.setMapOutputKeyClass(VIntWritable.class);
+		job.setMapOutputValueClass(Text.class);
+		job.setOutputKeyClass(VIntWritable.class);
+		job.setOutputValueClass(Text.class);
+		FileInputFormat.addInputPath(job, new Path(basedir+"postprocess/comDel"));
+		FileOutputFormat.setOutputPath(job, new Path(basedir+"postprocess/comFinal"));
+		System.exit(job.waitForCompletion(true) ? 0 : 1);
 		
+		/*合并相似社区*/
 	}
 }

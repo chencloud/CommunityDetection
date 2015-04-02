@@ -14,8 +14,12 @@ import edu.czy.importance.NodeImportance;
 import edu.czy.load.LoadEdgeFile;
 import edu.czy.load.LoadGML;
 import edu.czy.load.LoadGroundTruthFile;
+import edu.czy.lpa.BLPA;
+import edu.czy.lpa.DIFFWLPA;
+import edu.czy.lpa.DWLPA;
 import edu.czy.lpa.LPA;
 import edu.czy.lpa.LPAM;
+import edu.czy.lpa.LPAMM;
 import edu.czy.lpa.NMFWLPA;
 import edu.czy.lpa.StandardLPA;
 import edu.czy.measure.MeasureCollections;
@@ -23,7 +27,9 @@ import edu.czy.measure.Measure;
 import edu.czy.utils.GraphStatistic;
 import edu.czy.utils.GraphUtils;
 import edu.uci.ics.jung.graph.SparseGraph;
-
+/*
+ 
+ */
 public class MainDriver {
 	public static void repeatRun(SparseGraph<Vertex,Edge> graph,int repeatNum,boolean isQ,boolean isNMI, PrintStream pw)  {
 		double[] valuesQ = null;
@@ -34,14 +40,26 @@ public class MainDriver {
 		double maxNMI = Double.MIN_VALUE;
 		double minNMI = Double.MAX_VALUE;
 		if(isNMI)valuesNMI = new double[repeatNum];
+
+//		NMFWLPA nmfwlpa = new NMFWLPA(graph,100,true,true);
+		DIFFWLPA diffwlpa = new DIFFWLPA(graph,100,true,true);
+
 		for(int i=0; i<repeatNum; i++) {
 			//run algorithm;set algorithm
-//			LPA nmfwlpa = new NMFWLPA(graph,1000,true,true);
+
 //			nmfwlpa.run();
-//			LPA standardlpa = new StandardLPA(graph,1000);
+
+			diffwlpa.run();
+//			LPA dwlpa = new DWLPA(graph,10000,true,false);
+//			dwlpa.run();
+//			LPA standardlpa = new StandardLPA(graph,100);
 //			standardlpa.run();
-			LPA lpam = new LPAM(graph,1000);
-			lpam.run();
+//			LPA lpam = new LPAM(graph,100);
+//			lpam.run();
+//			LPA blpa = new BLPA(graph,100);
+//			blpa.run();
+//			LPA lpamm = new LPAMM(graph,100);
+//			lpamm.run();
 			if(isQ){
 				valuesQ[i] = MeasureCollections.calculateQFromCollectionsWithVertex(graph, GraphUtils.exportCommunityCollectionWithVertex(graph));
 				if(valuesQ[i]>maxQ) maxQ = valuesQ[i];
@@ -76,7 +94,7 @@ public class MainDriver {
 		}
 	}
 	
-	public static void RunMultiFile(String basedir,String[] filename,PrintStream pw) {
+	public static void RunMultiFile(String basedir,String[] filename,PrintStream pw, boolean isQ, boolean isNMI) {
 		for(int i=0;i<filename.length;i++) {
 			pw.println("++++++++++++++++++++++++++++++++++++++++++++++++");
 			pw.println("Running "+filename[i]);
@@ -84,7 +102,7 @@ public class MainDriver {
 			SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(basedir+filename[i]);
 			pw.println("N="+graph.getVertexCount()+";E="+graph.getEdgeCount());
 			//set parameter;
-			repeatRun(graph,10,true,false,pw);
+			repeatRun(graph,10,isQ,isNMI,pw);
 			pw.println("++++++++++++++++++++++++++++++++++++++++++++++++\n");
 		}
 	}
@@ -92,92 +110,48 @@ public class MainDriver {
 	{
 		String basedir = "E:\\dataset\\unweight_dataset\\";
 		String[] truthNewworkFilenames = {
-				"karate\\karate.gml",
-				"dolphins\\dolphins.gml",
-				"Internet\\Internet.gml",
-				"polbooks\\polbooks.gml",
-				"jazz\\jazz.net",
-				"email\\email.net",
+//				"karate\\karate.gml",
+//				"dolphins\\dolphins.gml",
+//				"polbooks\\polbooks.gml",
+//				"jazz\\jazz.net",
 				"mexican\\mexican.net",
-				"pro-pro\\pro-pro.net",
-				"celegans_metabolic\\celegans_metabolic.net",
-				"pgp\\pgp.net",
-				"power_grid\\power_grid.gml"
+//				"adjnoun\\adjnoun.gml",
+//				"celegans_metabolic\\celegans_metabolic.net",
+//				"football\\football.gml",
+//				"email\\email.net",
+//				"pro-pro\\pro-pro.net",
+//				"power_grid\\power_grid.gml",
+//				"pgp\\pgp.net",
+//				"Internet\\Internet.gml"
 		};
 		String[] LFKNetworkFilenames = {
-				"LFKnetwork\\100.gml",
-				"LFKnetwork\\500.gml",
-				"LFKnetwork\\1000.gml",
-				"LFKnetwork\\5000.gml",
+//				"LFKnetwork\\100.gml",
+//				"LFKnetwork\\500.gml",
+//				"LFKnetwork\\1000.gml",
+//				"LFKnetwork\\5000.gml",
 				"LFKnetwork\\10000.gml",
 				"LFKnetwork\\50000.gml",
 				"LFKnetwork\\100000.gml",
 				"LFKnetwork\\500000.gml",
-//				"LFKnetwork\\1000000.gml",
+//				"LFKnetwork\\1000000.gml"
 		};
 		PrintStream ps = null;
 		try {
-//			ps = new PrintStream(new FileOutputStream("result_standardlpa_truenetwork.txt"));
-			ps = new PrintStream(new FileOutputStream("result_lpam_LFRnetwork.txt"));
-//			RunMultiFile(basedir,truthNewworkFilenames,ps);
-			RunMultiFile(basedir,LFKNetworkFilenames,ps);
-		} catch (FileNotFoundException e) {
+//			ps = new PrintStream(new FileOutputStream("result_nmflpa_q_truenetwork_normal.txt"));
+			ps = new PrintStream(System.out);
+			RunMultiFile(basedir,truthNewworkFilenames,ps,true,false);
+			
+//			ps = new PrintStream(new FileOutputStream("result_nmflpa_q_nmi_LFRnetwork.txt"));
+//			RunMultiFile(basedir,LFKNetworkFilenames,ps,true,true);
+			
+//			ps = new PrintStream(new FileOutputStream("result_blpa_nmi_LFRnetwork.txt"));
+//			RunMultiFile(basedir,LFKNetworkFilenames,ps,false,true);
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}finally{
 			if(ps!=null)ps.close();
 		}
 		
-	}
-	public void TempFunc(){
-		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
-		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
-		GraphNMF gnmf=new GraphNMF(graph,2,100,5);
-		gnmf.InitParameter();
-		gnmf.trainSymmetric(true);
-		graph = gnmf.UpdateNodesWeight();
-		/*
-		 * Print the per node the weight
-		 */
-		System.out.println("NodeId\tWeightList");
-		for(Vertex v:graph.getVertices()){
-			System.out.println(v.getId());
-			for(double w:v.getWeight()) {
-				System.out.print(w+"\t");
-			}
-			System.out.println();
-		}
-		System.out.println("Node similarity with Neighborhood");
-		for(Vertex v:graph.getVertices()) {
-			for(Vertex neigh:graph.getNeighbors(v)) {
-				double node_importance = NodeImportance.getSmoothDegreeImportance(graph, v);
-//				double node_importance = NodeImportance.getPageRankImportance(sparse_graph, v);
-				System.out.println(v.getId()+"\t"+neigh.getId()+"\t"+Math.sqrt(GraphUtils.calcalueEducianSimilarity(v, neigh)*node_importance));
-//				System.out.println(v.getId()+"\t"+neigh.getId()+"\t"+Math.sqrt(GraphUtils.calcalueCosineSimilarity(v, neigh)*neigh_importance));
-//				System.out.println(v.getId()+"\t"+neigh.getId()+"\t"+Math.sqrt(GraphUtils.calcaluePearsonSimilarity(v, neigh)*neigh_importance));
-			}
-		}
-		/*
-		 * Run the Community Detection Algorithm
-		 */
-//		NMWeightLPA lpa=new NMWeightLPA(sparse_graph,100);
-		StandardLPA lpa=new StandardLPA(graph,1000);
-		lpa.run();
-		GraphUtils.PrintCommunityCollections(GraphUtils.exportCommunityCollection(graph),"\t");
-		
-		/*
-		 * Measure the Result
-		 */
-		
-		System.out.println("Modularity Q="+MeasureCollections.calculateQ(graph));
-		System.out.println("Truth Modularity Q="+MeasureCollections.calculateQForTruth(graph));
-		System.out.println("NMI="+MeasureCollections.calculateNMI(GraphUtils.exportCommunityCollection(graph),
-								GraphUtils.exportCommunityGroundTruthCollection(graph),graph.getVertexCount()));
-		/*
-		 * Export to gml File
-		 */
-		
-//		ExportFile.exportAsGML(sparse_graph, gmlfilename.substring(0,gmlfilename.lastIndexOf("."))+"result.gml");
-	
 	}
 }

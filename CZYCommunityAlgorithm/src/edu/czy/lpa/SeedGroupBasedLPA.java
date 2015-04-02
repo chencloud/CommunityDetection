@@ -14,8 +14,7 @@ import edu.uci.ics.jung.graph.util.EdgeType;
 
 public class SeedGroupBasedLPA {
 
-	public Collection<Collection<Vertex>> getSeedGroupBasedLPA(SparseGraph<Vertex,Edge> graph,LPA algo) {
-		Collection<Collection<Vertex>> result = null;
+	public static SparseGraph<Vertex,Edge> getSeedGroupBasedLPA(SparseGraph<Vertex,Edge> graph) {
 		SparseGraph<Vertex,Edge> subgraph = new SparseGraph<Vertex,Edge>();
 		Set<Vertex> localcenters = new HashSet<Vertex>();
 		for(Vertex v:graph.getVertices()) {
@@ -31,13 +30,10 @@ public class SeedGroupBasedLPA {
 		}
 		
 		extractSubGraph(localcenters,graph,subgraph,3);
-		algo.run();
-		result = algo.getCommunitysByVertex();
-		GraphUtils.PrintCommunityCollectionsWithVertex(result, ";");
-		return result;
+		return subgraph;
 	}
 
-	private void extractSubGraph(Set<Vertex> localcenters,SparseGraph<Vertex, Edge> graph,
+	private static void extractSubGraph(Set<Vertex> localcenters,SparseGraph<Vertex, Edge> graph,
 			SparseGraph<Vertex, Edge> subgraph, int i) {
 		// TODO Auto-generated method stub
 		if(i<=0)return;
@@ -50,14 +46,32 @@ public class SeedGroupBasedLPA {
 				nextLayer.add(neigh);
 				if(!subgraph.containsVertex(neigh)){
 					subgraph.addVertex(neigh);
-					subgraph.addEdge(new Edge(v.getId(),neigh.getId()), v, neigh, EdgeType.UNDIRECTED);
+				}
+				if(subgraph.findEdge(v, neigh) == null){
+					subgraph.addEdge(new Edge(v.getId(),neigh.getId()), v, neigh, EdgeType.UNDIRECTED); 
 				}
 			}
 		}
+		System.out.println(subgraph.getEdgeCount()+":"+subgraph.getVertexCount());
 		localcenters.clear();
 		localcenters.addAll(nextLayer);
 		nextLayer.clear();
 		i = i-1;
 		extractSubGraph(localcenters,graph,subgraph,i);
+	}
+	public static void main(String[] args) {
+//		String filename="E:\\dataset\\unweight_dataset\\adjnoun\\adjnoun.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\Karate\\Karate.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\dolphins\\dolphins.gml";
+//		String filename="E:\\dataset\\unweight_dataset\\toy_network\\toy_network.net";
+		String filename = "E:\\dataset\\unweight_dataset\\pro-pro\\pro-pro.net";
+		SparseGraph<Vertex,Edge> graph=GraphUtils.loadFileToGraph(filename);
+		
+		SparseGraph<Vertex,Edge> subGraph = SeedGroupBasedLPA.getSeedGroupBasedLPA(graph);
+		LPA standardlpa = new StandardLPA(subGraph,1000);
+		System.out.println(subGraph.getEdgeCount()+":"+subGraph.getVertexCount());
+		standardlpa.run();
+		Collection<Collection<Vertex>> seedGroups = standardlpa.getCommunitysByVertex();
+		GraphUtils.PrintCommunityCollectionsWithVertex(seedGroups, ";");
 	}
 }
